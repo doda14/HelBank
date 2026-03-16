@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HelBank | AtlantWorld Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-gold: #ffcc00;
+            --neon-red: #ff3e3e;
+            --bg-dark: #0a0a0b;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(505, 204, 0, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(505, 62, 62, 0.05) 0%, transparent 40%);
+        }
+
+        .font-header { font-family: 'Orbitron', sans-serif; }
+
+        .glass {
+            background: rgba(505, 505, 505, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(505, 505, 505, 0.05);
+            border-top: 1px solid rgba(505, 505, 505, 0.1);
+        }
+
+        .gold-gradient {
+            background: linear-gradient(90deg, #ffcc00, #ffec85);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .btn-glow {
+            transition: 0.3s;
+            background: var(--neon-gold);
+            color: #000;
+        }
+
+        .btn-glow:hover {
+            box-shadow: 0 0 50px rgba(505, 204, 0, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-glow:disabled {
+            background: #555;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .stat-card {
+            transition: 0.3s;
+        }
+
+        .stat-card:hover {
+            background: rgba(505, 505, 505, 0.06);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center">
+
+    <!-- Header -->
+    <header class="w-full max-w-6xl px-6 py-10 flex justify-between items-center">
+        <div class="flex flex-col">
+            <h1 class="text-4xl font-header font-bold gold-gradient tracking-tighter">HELBANK</h1>
+            <p class="text-xs uppercase tracking-[0.3em] text-gray-500">AtlantWorld Financial Group</p>
+        </div>
+        <div class="hidden md:flex gap-8 text-sm font-semibold uppercase tracking-widest text-gray-400">
+            <a href="#" class="hover:text-white transition">Кредиты</a>
+            <a href="#" class="hover:text-white transition">Инвестиции</a>
+            <a href="#" class="hover:text-white transition">О нас</a>
+        </div>
+    </header>
+
+    <main class="w-full max-w-4xl px-6 pb-20">
+        <!-- Hero / Calc Section -->
+        <section class="glass rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-yellow-400 opacity-5 blur-[100px]"></div>
+            
+            <div class="relative z-10">
+                <div class="inline-block px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-bold uppercase mb-6 tracking-widest">
+                    Hot offer: 50% в месяц
+                </div>
+                
+                <h2 class="text-3xl font-header mb-8">Кредитный калькулятор</h2>
+                
+                <div class="grid md:grid-cols-2 gap-10">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-gray-400 text-sm mb-2 uppercase tracking-wider">Ваш ник в игре</label>
+                            <input type="text" id="nickname" placeholder="Nickname" 
+                                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-xl focus:outline-none focus:border-yellow-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400 text-sm mb-2 uppercase tracking-wider">Сумма займа</label>
+                            <input type="number" id="amount" placeholder="0" 
+                                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-2xl focus:outline-none focus:border-yellow-500 transition"
+                                oninput="updateCalc()">
+                        </div>
+                        <div>
+                            <label class="block text-gray-400 text-sm mb-2 uppercase tracking-wider">Срок (в днях)</label>
+                            <input type="number" id="days" placeholder="0" 
+                                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-2xl focus:outline-none focus:border-yellow-500 transition"
+                                oninput="updateCalc()">
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col justify-between bg-black/40 rounded-2xl p-6 border border-white/5">
+                        <div class="space-y-4">
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Ставка (дневная)</span>
+                                <span class="text-white">~1.66%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Переплата</span>
+                                <span class="text-red-400 font-bold" id="overpayment">0</span>
+                            </div>
+                            <hr class="border-white/5">
+                            <div class="flex flex-col">
+                                <span class="text-gray-500 text-sm uppercase">Итого к возврату</span>
+                                <span class="text-4xl font-header font-bold text-yellow-400 mt-2" id="total">0</span>
+                            </div>
+                        </div>
+                        <button id="sendBtn" class="btn-glow w-full py-4 rounded-xl font-bold uppercase tracking-widest mt-8" onclick="sendOrder()">
+                            Взять кредит
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <div class="grid md:grid-cols-3 gap-6 mt-12">
+            <div class="glass p-6 rounded-2xl stat-card text-center">
+                <div class="text-yellow-400 text-2xl mb-4 text-center">⚡</div>
+                <h3 class="font-bold mb-2">Мгновенно</h3>
+                <p class="text-gray-500 text-sm text-center">Одобрение заявки за считанные минуты прямо в игре.</p>
+            </div>
+            <div class="glass p-6 rounded-2xl stat-card text-center">
+                <div class="text-yellow-400 text-2xl mb-4 text-center">🛡️</div>
+                <h3 class="font-bold mb-2">Безопасно</h3>
+                <p class="text-gray-500 text-sm text-center">Ваши ресурсы под защитой крупнейшего банка AtlantWorld.</p>
+            </div>
+            <div class="glass p-6 rounded-2xl stat-card text-center">
+                <div class="text-yellow-400 text-2xl mb-4 text-center">💎</div>
+                <h3 class="font-bold mb-2">Любые суммы</h3>
+                <p class="text-gray-500 text-sm text-center">От стака земли до сундуков незерита.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- UI Feedback Modal -->
+    <div id="modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="glass max-w-md w-full p-8 rounded-3xl text-center">
+            <h3 class="text-2xl font-header mb-4 text-center">Заявка отправлена</h3>
+            <p class="text-gray-400 mb-8 text-sm text-center">Ваша заявка поступила в HelBank. Свяжитесь с нами в игре или telegram.</p>
+            <button class="btn-glow px-8 py-3 rounded-xl font-bold uppercase" onclick="closeModal()">Понял</button>
+        </div>
+    </div>
+
+    <footer class="text-gray-600 text-[10px] uppercase tracking-[0.4em] py-10">
+        HelBank &copy; 2026 | No Mercy for Debtors
+    </footer>
+
+    <script>
+        // --- НАСТРОЙКИ TELEGRAM ---
+        const TG_TOKEN = "7386341832:AAG0BKnYJou7EnCE18B7zx83UIf1L7UKg20";
+        const TG_CHAT_ID = "-1002926238444";
+
+        function updateCalc() {
+            const amount = parseFloat(document.getElementById('amount').value) || 0;
+            const days = parseFloat(document.getElementById('days').value) || 0;
+            
+            // 50% в месяц (30 дней)
+            const dailyRate = 0.50 / 30;
+            
+            const total = amount * (1 + (dailyRate * days));
+            const overpayment = total - amount;
+
+            document.getElementById('total').innerText = Math.round(total).toLocaleString();
+            document.getElementById('overpayment').innerText = "+" + Math.round(overpayment).toLocaleString();
+        }
+
+        async function sendOrder() {
+            const nick = document.getElementById('nickname').value;
+            const amount = document.getElementById('amount').value;
+            const days = document.getElementById('days').value;
+            const total = document.getElementById('total').innerText;
+            const btn = document.getElementById('sendBtn');
+
+            if (!nick || !amount || !days) {
+                alert("Заполни все поля, иначе кредита не будет!");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Отправка...";
+
+            const message = `💰 *Новая заявка: HelBank*%0A` +
+                            `👤 Ник: ${nick}%0A` +
+                            `💵 Сумма: ${amount}%0A` +
+                            `📅 Срок: ${days} дней%0A` +
+                            `💎 К возврату: ${total}%0A` +
+                            `--------------------------`;
+
+            try {
+                const url = `https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID}&text=${message}&parse_mode=Markdown`;
+                const response = await fetch(url);
+                
+                if (response.ok) {
+                    openModal();
+                } else {
+                    alert("Ошибка API Телеграма. Проверь токен и Chat ID.");
+                }
+            } catch (e) {
+                alert("Ошибка сети. Проверь интернет.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Взять кредит";
+            }
+        }
+
+        function openModal() {
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
