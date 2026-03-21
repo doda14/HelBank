@@ -13,7 +13,6 @@
             --discord-blurple: #5865F2;
         }
 
-        /* Кастомный скроллбар в стиле AtlantWorld */
         ::-webkit-scrollbar {
             width: 10px;
         }
@@ -54,7 +53,6 @@
             letter-spacing: -0.02em;
         }
 
-        /* Анимация пульсирующей обводки для главной карточки */
         @keyframes border-glow {
             0%, 100% { border-color: rgba(255, 112, 16, 0.1); box-shadow: 0 0 0px rgba(255, 112, 16, 0); }
             50% { border-color: rgba(255, 112, 16, 0.4); box-shadow: 0 0 20px rgba(255, 112, 16, 0.1); }
@@ -122,7 +120,6 @@
             color: white;
         }
 
-        /* Анимация вылезания рамки при фокусе */
         .input-field {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -136,12 +133,6 @@
             outline: none;
             box-shadow: 0 0 15px rgba(255, 112, 16, 0.2);
             transform: scale(1.01);
-        }
-
-        .amount-input {
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: clip;
         }
 
         .ip-box {
@@ -188,7 +179,6 @@
     </header>
 
     <main class="w-full px-6 flex-1 flex flex-col items-center justify-center max-w-7xl py-10">
-        <!-- Блок IP -->
         <div class="mb-8 w-full max-w-sm text-center">
             <label class="text-white/20 text-[10px] uppercase tracking-[0.3em] mb-2 font-bold font-header inline-block">IP сервера</label>
             <div class="ip-box group" onclick="copyIp()">
@@ -208,8 +198,6 @@
                 </div>
                 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-stretch w-full">
-                    
-                    <!-- Поля ввода -->
                     <div class="space-y-6 w-full">
                         <div class="grid grid-cols-2 gap-6">
                             <div>
@@ -218,7 +206,7 @@
                             </div>
                             <div>
                                 <label class="block text-white/20 text-[10px] uppercase tracking-[0.2em] mb-2 font-bold font-header">Discord ID</label>
-                                <input type="text" id="discord" placeholder="Ваш ID" class="input-field rounded-xl px-5 py-4 font-bold text-base">
+                                <input type="text" id="discord" placeholder="Ваш ID" oninput="validateDiscord(this)" class="input-field rounded-xl px-5 py-4 font-bold text-base">
                             </div>
                         </div>
                         
@@ -236,7 +224,6 @@
                         </div>
                     </div>
 
-                    <!-- Результат -->
                     <div class="w-full">
                         <div class="bg-white/[0.02] rounded-[2rem] p-8 border border-white/5 flex flex-col justify-between h-full shadow-inner">
                             <div class="space-y-6">
@@ -269,7 +256,6 @@
     </main>
 
     <footer class="w-full max-w-5xl px-8 py-16 flex flex-col items-center">
-        <!-- Блок EULA -->
         <div class="text-center space-y-4 max-w-3xl px-4 pt-10 border-t border-white/5">
             <p class="text-white/40 text-[13px] font-header font-bold uppercase tracking-widest italic">
                 © 2026 AtlantWorld. Все права защищены.
@@ -280,7 +266,6 @@
         </div>
     </footer>
 
-    <!-- Модальное окно -->
     <div id="modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center z-[200] p-6">
         <div class="glass max-w-sm w-full p-10 rounded-[2.5rem] text-center border border-orange-500/30">
             <div class="w-14 h-14 bg-orange-600 rounded-2xl flex items-center justify-center text-white text-2xl mx-auto mb-6">✓</div>
@@ -295,6 +280,10 @@
 
         function validateNick(input) {
             input.value = input.value.replace(/[^a-zA-Z0-9_]/g, '');
+        }
+
+        function validateDiscord(input) {
+            input.value = input.value.replace(/[^a-zA-Z0-9._]/g, '');
         }
 
         function updateCalc() {
@@ -325,12 +314,20 @@
 
         function copyIp() {
             const ip = document.getElementById('serverIp').innerText;
-            const el = document.createElement('textarea');
-            el.value = ip;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(ip).then(() => showCopySuccess());
+            } else {
+                const el = document.createElement('textarea');
+                el.value = ip;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                showCopySuccess();
+            }
+        }
+
+        function showCopySuccess() {
             const status = document.getElementById('copyStatus');
             status.style.opacity = '1';
             setTimeout(() => { status.style.opacity = '0'; }, 2000);
@@ -349,7 +346,7 @@
             btn.disabled = true;
             btn.innerText = "ОТПРАВКА...";
 
-            const msg = `🏦 *НОВАЯ ЗАЯВКА HELBANK*\n\n👤 *Игрок:* \`${nick}\`\n💬 *Discord:* ${ds}\n💰 *Сумма:* $${amount}\n⏳ *Срок:* ${days} дн.\n📈 *Итого:* ${total}`;
+            const msg = `🏦 *НОВАЯ ЗАЯВКА HELBANK*\n\n👤 *Игрок:* \`${nick}\`\n💬 *Discord:* \`${ds}\`\n💰 *Сумма:* $${amount}\n⏳ *Срок:* ${days} дн.\n📈 *Итого:* ${total}`;
 
             try {
                 const response = await fetch(WORKER_URL, {
@@ -362,6 +359,7 @@
                     document.getElementById('modal').classList.remove('hidden');
                 }
             } catch (e) {
+                console.error(e);
             } finally {
                 btn.disabled = false;
                 btn.innerText = "Оформить заявку";
