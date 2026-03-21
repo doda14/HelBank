@@ -13,6 +13,27 @@
             --discord-blurple: #5865F2;
         }
 
+        /* Кастомный скроллбар в стиле AtlantWorld */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a0b;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #222;
+            border-radius: 5px;
+            border: 2px solid #0a0a0b;
+            transition: 0.3s;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--atlant-orange);
+            box-shadow: 0 0 10px rgba(255, 112, 16, 0.5);
+        }
+
         body {
             background-color: var(--bg-dark);
             color: #e2e8f0;
@@ -20,9 +41,8 @@
             background-image: 
                 radial-gradient(circle at 10% 20%, rgba(255, 112, 16, 0.05) 0%, transparent 40%),
                 radial-gradient(circle at 90% 80%, rgba(255, 112, 16, 0.05) 0%, transparent 40%);
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            overflow: hidden; 
             width: 100%;
             display: flex;
             flex-direction: column;
@@ -143,7 +163,7 @@
         }
     </style>
 </head>
-<body class="overflow-hidden">
+<body class="overflow-x-hidden">
 
     <a href="https://discord.com/invite/atlantworld" target="_blank" class="discord-side-btn">
         <svg width="22" height="22" fill="white" viewBox="0 0 24 24">
@@ -167,7 +187,7 @@
         </a>
     </header>
 
-    <main class="w-full px-6 flex-1 flex flex-col items-center justify-center max-w-7xl">
+    <main class="w-full px-6 flex-1 flex flex-col items-center justify-center max-w-7xl py-10">
         <!-- Блок IP -->
         <div class="mb-8 w-full max-w-sm text-center">
             <label class="text-white/20 text-[10px] uppercase tracking-[0.3em] mb-2 font-bold font-header inline-block">IP сервера</label>
@@ -248,7 +268,16 @@
         </section>
     </main>
 
-    <footer class="py-6 opacity-10 text-[9px] font-bold uppercase tracking-[0.5em] font-header">
+    <footer class="w-full max-w-5xl px-8 py-16 flex flex-col items-center">
+        <!-- Блок EULA -->
+        <div class="text-center space-y-4 max-w-3xl px-4 pt-10 border-t border-white/5">
+            <p class="text-white/40 text-[13px] font-header font-bold uppercase tracking-widest italic">
+                © 2026 AtlantWorld. Все права защищены.
+            </p>
+            <p class="text-white/20 text-[11px] font-medium leading-relaxed max-w-2xl mx-auto">
+                AtlantWorld не связан с Mojang A.B. Проект является независимым RolePlay сервером. Вся коммерческая деятельность проекта, включая пожертвования и игровые услуги, полностью соответствует политике и правилам EULA от Mojang A.B.
+            </p>
+        </div>
     </footer>
 
     <!-- Модальное окно -->
@@ -330,7 +359,6 @@
                 });
 
                 if (response.ok) {
-                
                     document.getElementById('modal').classList.remove('hidden');
                 }
             } catch (e) {
