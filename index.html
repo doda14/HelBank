@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HelBank | AtlantWorld Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Golos+Text:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --atlant-orange: #ff7010;
@@ -37,7 +40,7 @@
             background-color: var(--bg-dark);
             color: #e2e8f0;
             font-family: 'Golos Text', sans-serif;
-            background-image: 
+            background-image:
                 radial-gradient(circle at 10% 20%, rgba(255, 112, 16, 0.05) 0%, transparent 40%),
                 radial-gradient(circle at 90% 80%, rgba(255, 112, 16, 0.05) 0%, transparent 40%);
             min-height: 100vh;
@@ -48,14 +51,23 @@
             align-items: center;
         }
 
-        .font-header { 
-            font-family: 'Unbounded', sans-serif; 
+        .font-header {
+            font-family: 'Unbounded', sans-serif;
             letter-spacing: -0.02em;
         }
 
         @keyframes border-glow {
-            0%, 100% { border-color: rgba(255, 112, 16, 0.1); box-shadow: 0 0 0px rgba(255, 112, 16, 0); }
-            50% { border-color: rgba(255, 112, 16, 0.4); box-shadow: 0 0 20px rgba(255, 112, 16, 0.1); }
+
+            0%,
+            100% {
+                border-color: rgba(255, 112, 16, 0.1);
+                box-shadow: 0 0 0px rgba(255, 112, 16, 0);
+            }
+
+            50% {
+                border-color: rgba(255, 112, 16, 0.4);
+                box-shadow: 0 0 20px rgba(255, 112, 16, 0.1);
+            }
         }
 
         .glass {
@@ -147,107 +159,457 @@
             transition: 0.3s;
         }
 
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .tab-btn {
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .tab-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, #ff7010, #ffb310);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tab-btn.active {
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(255, 112, 16, 0.3);
+        }
+
+        .tab-btn.active::before {
+            opacity: 1;
+        }
+
+        .form-section {
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        .form-hidden {
+            opacity: 0;
+            transform: translateY(15px);
+            pointer-events: none;
+            position: absolute;
+            visibility: hidden;
+        }
+
+        @media (max-width: 768px) {
+            .discord-side-btn {
+                display: none !important;
+            }
+        }
+
+        .form-visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+            position: relative;
+            visibility: visible;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 8px rgba(249, 115, 22, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(249, 115, 22, 0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 1s ease-out forwards;
+            opacity: 0;
+        }
+
+        .delay-100 {
+            animation-delay: 100ms;
+        }
+
+        .delay-200 {
+            animation-delay: 200ms;
+        }
+
+        .hover-lift {
+            transition: all 0.4s ease-out;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(249, 115, 22, 0.3);
+        }
+
+        .btn-glow {
+            animation: pulse-glow 4s infinite;
+        }
+
+        #overpayment-box {
+            transition: all 0.6s ease-out;
+        }
+
+        .info-accordion {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, opacity 0.4s ease-out;
+            opacity: 0;
+        }
+
+        .info-accordion.open {
+            opacity: 1;
         }
     </style>
 </head>
+
 <body class="overflow-x-hidden">
 
     <a href="https://discord.com/invite/atlantworld" target="_blank" class="discord-side-btn">
         <svg width="22" height="22" fill="white" viewBox="0 0 24 24">
-            <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+            <path
+                d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
         </svg>
         <span class="dc-text">Discord</span>
     </a>
 
-    <header class="w-full max-w-7xl px-8 py-6 flex justify-between items-center">
-        <div class="flex flex-col">
-            <h1 class="text-3xl font-header font-black tracking-tighter uppercase leading-none italic text-white">HelBank</h1>
+    <header
+        class="w-full max-w-7xl px-4 sm:px-8 py-6 flex flex-col sm:flex-row justify-between items-center gap-6 sm:gap-0">
+        <div class="flex flex-col items-center sm:items-start text-center sm:text-left">
+            <h1 class="text-3xl font-header font-black tracking-tighter uppercase leading-none italic text-white">
+                HelBank</h1>
             <p class="text-[10px] uppercase tracking-[0.4em] text-white/20 mt-1 font-bold">Financial Solutions</p>
         </div>
-        
-        <a href="https://discord.com/invite/atlantworld" target="_blank" class="flex items-center gap-4 no-underline">
+
+        <a href="https://discord.com/invite/atlantworld" target="_blank"
+            class="flex items-center gap-4 no-underline scale-90 sm:scale-100">
             <div class="text-right flex flex-col justify-center">
                 <span class="text-[#ff7010] font-header font-black text-base uppercase leading-none">AtlantWorld</span>
                 <span class="text-white/30 text-[9px] uppercase tracking-[0.1em] font-bold">RolePlay Project</span>
             </div>
-            <img src="https://atlantworld.com/images/atlantworld-logo-onl.png" alt="AtlantWorld" class="h-12 w-auto drop-shadow-[0_0_15px_rgba(255,112,16,0.2)]">
+            <img src="https://atlantworld.com/images/atlantworld-logo-onl.png" alt="AtlantWorld"
+                class="h-12 w-auto drop-shadow-[0_0_15px_rgba(255,112,16,0.2)]">
         </a>
     </header>
 
     <main class="w-full px-6 flex-1 flex flex-col items-center justify-center max-w-7xl py-10">
         <div class="mb-8 w-full max-w-sm text-center">
-            <label class="text-white/20 text-[10px] uppercase tracking-[0.3em] mb-2 font-bold font-header inline-block">IP сервера</label>
+            <label
+                class="text-white/20 text-[10px] uppercase tracking-[0.3em] mb-2 font-bold font-header inline-block">IP
+                сервера</label>
             <div class="ip-box group" onclick="copyIp()">
                 <span class="font-header font-bold text-white/90 text-sm" id="serverIp">mc.atlantworld.com</span>
                 <div class="p-2 bg-white/5 rounded-md group-hover:bg-orange-500/20 transition-colors">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
                 </div>
             </div>
-            <p id="copyStatus" class="text-[10px] mt-2 text-orange-500 font-bold uppercase opacity-0 transition-opacity">Скопировано</p>
+            <p id="copyStatus"
+                class="text-[10px] mt-2 text-orange-500 font-bold uppercase opacity-0 transition-opacity">Скопировано
+            </p>
         </div>
 
-        <section class="glass rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden w-full max-w-5xl">
+        <section
+            class="glass rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 md:p-12 relative overflow-hidden w-full max-w-5xl">
             <div class="relative z-10 w-full">
-                <div class="mb-8">
-                    <h2 class="text-3xl md:text-4xl font-header font-black tracking-tight mb-2 italic text-white">Расчет <span class="orange-gradient">условий</span></h2>
-                    <p class="text-white/30 text-[11px] md:text-sm font-medium">Система моментального кредитования HelBank.</p>
+                <div
+                    class="mb-8 flex flex-col md:flex-row justify-between items-center sm:items-start md:items-center gap-6">
+
+                    <div class="animate-fade-in">
+                        <div class="flex items-center gap-3 mb-2">
+                            <h1 class="text-4xl sm:text-5xl font-black font-header italic tracking-tight">Расчет <span
+                                    id="main-title-word" class="text-[#ff7300] transition-all">кредита</span></h1>
+                        </div>
+                        <p id="main-subtitle"
+                            class="text-white/40 text-[11px] sm:text-xs font-bold uppercase tracking-[0.2em] transition-all">
+                            Система моментального кредитования HelBank.</p>
+                    </div>
+
+                    <div
+                        class="flex bg-white/5 rounded-2xl p-1.5 border border-white/10 glass shadow-none w-full sm:w-auto max-w-[300px] sm:max-w-none mx-auto md:mx-0">
+                        <button id="tab-credit" onclick="switchTab('credit')"
+                            class="tab-btn w-1/2 sm:w-auto active px-4 sm:px-8 py-3 rounded-xl font-header font-bold text-xs sm:text-sm text-white transition-all">Кредит</button>
+                        <button id="tab-deposit" onclick="switchTab('deposit')"
+                            class="tab-btn w-1/2 sm:w-auto px-4 sm:px-8 py-3 rounded-xl font-header font-bold text-xs sm:text-sm text-white/50 hover:text-white transition-all">Вклад</button>
+                    </div>
                 </div>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-stretch w-full">
-                    <div class="space-y-6 w-full">
-                        <div class="grid grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-white/20 text-[10px] uppercase tracking-[0.2em] mb-2 font-bold font-header">Никнейм (EN)</label>
-                                <input type="text" id="nickname" placeholder="Введите ник" oninput="validateNick(this)" class="input-field rounded-xl px-5 py-4 font-bold text-base">
+
+                <div id="forms-container" class="relative w-full">
+                    <div id="credit-section" class="form-section form-visible w-full">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-stretch w-full">
+                            <div class="space-y-6 w-full">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                                    <div>
+                                        <label
+                                            class="block text-white/20 text-[10px] uppercase tracking-[0.2em] mb-2 font-bold font-header">Никнейм
+                                            (EN)</label>
+                                        <input type="text" id="nickname" placeholder="Введите ник"
+                                            oninput="validateNick(this)"
+                                            class="input-field rounded-xl px-5 py-4 font-bold text-base">
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="block text-white/20 text-[10px] uppercase tracking-[0.2em] mb-2 font-bold font-header">Discord
+                                            ID</label>
+                                        <input type="text" id="discord" placeholder="Ваш ID"
+                                            oninput="validateDiscord(this)"
+                                            class="input-field rounded-xl px-5 py-4 font-bold text-base">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label
+                                        class="block text-white/20 text-[10px] uppercase tracking-[0.2em] mb-2 font-bold font-header">Сумма
+                                        кредита</label>
+                                    <div class="relative">
+                                        <input type="number" id="amount" placeholder="Введите сумму"
+                                            oninput="updateCalc()"
+                                            class="input-field rounded-xl pl-12 pr-6 py-5 text-3xl font-black amount-input">
+                                        <span
+                                            class="absolute left-5 top-1/2 -translate-y-1/2 text-2xl font-header font-black text-white/5 italic">$</span>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                                    <div>
+                                        <label
+                                            class="block text-white/20 text-[10px] uppercase tracking-[0.2em] mb-2 font-bold font-header">Срок
+                                            возврата (дни)</label>
+                                        <input type="number" id="days" placeholder="Укажите срок" min="1"
+                                            oninput="updateCalc()"
+                                            class="input-field rounded-xl px-5 py-4 text-xl sm:text-2xl font-black">
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="block text-white/20 text-[10px] uppercase tracking-[0.2em] mb-2 font-bold font-header">Промокод
+                                            (-5%)</label>
+                                        <input type="text" id="promo" placeholder="Если есть" oninput="verifyPromo()"
+                                            class="input-field rounded-xl px-5 py-4 text-xl sm:text-2xl font-black uppercase text-orange-400 border-2 border-transparent transition-colors placeholder:normal-case">
+                                        <p id="promo-status" class="text-xs mt-2 hidden font-bold"></p>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-white/20 text-[10px] uppercase tracking-[0.2em] mb-2 font-bold font-header">Discord ID</label>
-                                <input type="text" id="discord" placeholder="Ваш ID" oninput="validateDiscord(this)" class="input-field rounded-xl px-5 py-4 font-bold text-base">
+
+                            <div class="w-full">
+                                <div
+                                    class="bg-white/[0.02] rounded-[2rem] p-8 border border-white/5 flex flex-col justify-between h-full shadow-inner">
+                                    <div class="space-y-6">
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div
+                                                class="p-4 bg-white/5 rounded-2xl border border-white/5 transition-colors hover:border-orange-500/30">
+                                                <span
+                                                    class="text-white/20 text-[9px] font-black uppercase tracking-wider block mb-1 font-header">Ставка</span>
+                                                <span class="text-white font-header font-black text-[11px]">50% /
+                                                    МЕС.</span>
+                                            </div>
+                                            <div id="overpayment-box"
+                                                class="col-span-1 bg-[#1e1a18] p-6 rounded-2xl border border-white/5 flex flex-col justify-center relative hover:border-orange-500/50">
+                                                <p
+                                                    class="text-white/30 text-[10px] uppercase tracking-[0.2em] mb-1 font-bold font-header">
+                                                    Переплата</p>
+                                                <div id="discount-label"
+                                                    class="text-orange-400 text-xs font-bold leading-none mb-1 hidden">
+                                                </div>
+                                                <p id="overpayment"
+                                                    class="text-xl sm:text-2xl font-black text-red-500 break-words">+$0
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="pt-6 border-t border-white/5">
+                                            <p
+                                                class="text-white/20 text-[10px] uppercase font-black tracking-[0.3em] font-header mb-1">
+                                                К возврату</p>
+                                            <div class="text-4xl sm:text-5xl md:text-6xl font-header font-black orange-gradient tracking-tighter leading-none break-all"
+                                                id="total">$0</div>
+                                        </div>
+                                    </div>
+
+                                    <button id="sendBtn" onclick="sendOrder()"
+                                        class="w-full bg-[#f97316] hover:bg-[#ea580c] text-white font-black text-sm uppercase tracking-widest py-6 rounded-2xl transition-all hover-lift btn-glow mt-12 sm:mt-16 group flex items-center justify-center gap-3">
+                                        ОФОРМИТЬ ЗАЯВКУ
+                                        <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                                d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-white/20 text-[10px] uppercase tracking-[0.2em] mb-2 font-bold font-header">Сумма кредита</label>
-                            <div class="relative">
-                                <input type="number" id="amount" placeholder="Введите сумму" oninput="updateCalc()" class="input-field rounded-xl pl-12 pr-6 py-5 text-3xl font-black amount-input">
-                                <span class="absolute left-5 top-1/2 -translate-y-1/2 text-2xl font-header font-black text-white/5 italic">$</span>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-white/20 text-[10px] uppercase tracking-[0.2em] mb-2 font-bold font-header">Срок возврата (дни)</label>
-                            <input type="number" id="days" placeholder="Укажите срок" min="1" oninput="updateCalc()" class="input-field rounded-xl px-6 py-5 text-3xl font-black">
                         </div>
                     </div>
 
-                    <div class="w-full">
-                        <div class="bg-white/[0.02] rounded-[2rem] p-8 border border-white/5 flex flex-col justify-between h-full shadow-inner">
-                            <div class="space-y-6">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                        <span class="text-white/20 text-[9px] font-black uppercase tracking-wider block mb-1 font-header">Ставка</span>
-                                        <span class="text-white font-header font-black text-[11px]">50% / МЕС.</span>
+                    <div id="deposit-section" class="form-section form-hidden w-full">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-stretch w-full">
+                            <div class="space-y-6 w-full flex flex-col justify-center">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                                    <div>
+                                        <label
+                                            class="block text-white/20 text-[10px] uppercase tracking-[0.2em] mb-2 font-bold font-header">Никнейм
+                                            (EN)</label>
+                                        <input type="text" id="dep-nickname" placeholder="Введите ник"
+                                            oninput="validateNick(this)"
+                                            class="input-field rounded-xl px-5 py-4 font-bold text-base">
                                     </div>
-                                    <div class="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                        <span class="text-white/20 text-[9px] font-black uppercase tracking-wider block mb-1 font-header">Переплата</span>
-                                        <span class="text-red-500 font-header font-black text-[11px]" id="overpayment">+$0</span>
+                                    <div>
+                                        <label
+                                            class="block text-white/20 text-[10px] uppercase tracking-[0.2em] mb-2 font-bold font-header">Discord
+                                            ID</label>
+                                        <input type="text" id="dep-discord" placeholder="Ваш ID"
+                                            oninput="validateDiscord(this)"
+                                            class="input-field rounded-xl px-5 py-4 font-bold text-base">
                                     </div>
                                 </div>
-                                
-                                <div class="pt-6 border-t border-white/5">
-                                    <p class="text-white/20 text-[10px] uppercase font-black tracking-[0.3em] font-header mb-1">К возврату</p>
-                                    <div class="text-5xl md:text-6xl font-header font-black orange-gradient tracking-tighter leading-none" id="total">$0</div>
+
+                                <div>
+                                    <label
+                                        class="block text-white/20 text-[10px] uppercase tracking-[0.2em] mb-2 font-bold font-header">Сумма
+                                        вклада</label>
+                                    <div class="relative">
+                                        <input type="number" id="dep-amount" placeholder="Введите сумму"
+                                            oninput="updateDepositCalc()"
+                                            class="input-field rounded-xl pl-12 pr-6 py-5 text-3xl font-black amount-input">
+                                        <span
+                                            class="absolute left-5 top-1/2 -translate-y-1/2 text-2xl font-header font-black text-white/5 italic">$</span>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                                    <div>
+                                        <label
+                                            class="block text-white/20 text-[10px] uppercase tracking-[0.2em] mb-2 font-bold font-header">Срок
+                                            вклада (дни)</label>
+                                        <input type="number" id="dep-days" placeholder="Мин. 7 дней" min="7" value="30"
+                                            oninput="updateDepositCalc()"
+                                            class="input-field rounded-xl px-5 py-4 text-2xl font-black">
+                                    </div>
+                                </div>
+
+                                <button onclick="toggleDepositInfo()" id="dep-info-btn"
+                                    class="flex items-center gap-2 text-white/30 hover:text-orange-400 transition-colors text-xs font-bold uppercase tracking-widest group mt-2">
+                                    <svg id="dep-info-chevron" class="w-4 h-4 transition-transform duration-300"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                    Как это работает?
+                                </button>
+
+                                <div id="dep-info-block" class="info-accordion">
+                                    <div
+                                        class="bg-white/[0.03] rounded-2xl p-6 border border-white/5 space-y-5 text-white/60 text-[13px] leading-relaxed">
+                                        <p class="text-white/80 font-semibold text-sm">
+                                            Вклад — это денежная сумма, которую вы передаёте банку HelBank на
+                                            определённый срок под проценты. По сути, вы даёте банку деньги в долг, а он
+                                            платит вам за это вознаграждение и гарантирует возврат всей суммы.
+                                        </p>
+
+                                        <div>
+                                            <p class="text-orange-400 font-bold text-xs uppercase tracking-widest mb-3">
+                                                📋 Основные понятия</p>
+                                            <ul class="space-y-2">
+                                                <li><span class="text-white/90 font-semibold">Основная сумма</span> —
+                                                    деньги, которые вы положили на счёт.</li>
+                                                <li><span class="text-white/90 font-semibold">Процентная ставка</span> —
+                                                    10% в месяц, которые HelBank начисляет на вашу сумму.</li>
+                                                <li><span class="text-white/90 font-semibold">Срок</span> — период, на
+                                                    который вы размещаете деньги (минимум 7 дней).</li>
+                                                <li><span class="text-white/90 font-semibold">Капитализация</span> —
+                                                    когда проценты прибавляются к основной сумме вклада, и в следующем
+                                                    периоде процент начисляется уже на бóльшую сумму («процент на
+                                                    процент»).</li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="bg-white/[0.03] rounded-xl p-5 border border-white/5">
+                                            <p class="text-orange-400 font-bold text-xs uppercase tracking-widest mb-3">
+                                                💡 Пример расчёта</p>
+                                            <p>Представим, что у вас есть <span class="text-white font-bold">$100
+                                                    000</span>, и вы открываете вклад на <span
+                                                    class="text-white font-bold">30 дней</span> со ставкой <span
+                                                    class="text-green-400 font-bold">10% в месяц</span>:</p>
+                                            <ul class="mt-3 space-y-1">
+                                                <li>💰 Ваша сумма: <span class="text-white font-bold">$100 000</span>
+                                                </li>
+                                                <li>📈 Прибыль за месяц: <span class="text-green-400 font-bold">+$10
+                                                        000</span></li>
+                                                <li>💸 Итого: <span class="text-white font-bold">$110 000</span></li>
+                                            </ul>
+                                        </div>
+
+                                        <p class="text-white/40 text-[11px] italic">* Проценты начисляются
+                                            пропорционально количеству дней размещения вклада.</p>
+                                    </div>
                                 </div>
                             </div>
-                            
-                            <button id="sendBtn" onclick="sendOrder()" class="btn-atlant w-full py-5 rounded-xl mt-8 flex items-center justify-center gap-3">
-                                Оформить заявку
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                            </button>
+
+                            <div class="w-full">
+                                <div
+                                    class="bg-white/[0.02] rounded-[2rem] p-8 border border-white/5 flex flex-col justify-between h-full shadow-inner">
+                                    <div class="space-y-6">
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div class="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                                <span
+                                                    class="text-white/20 text-[9px] font-black uppercase tracking-wider block mb-1 font-header">Ставка</span>
+                                                <span class="text-green-500 font-header font-black text-[11px]">10% /
+                                                    МЕС.</span>
+                                            </div>
+                                            <div class="p-4 bg-white/5 rounded-2xl border border-white/5">
+                                                <span
+                                                    class="text-white/20 text-[9px] font-black uppercase tracking-wider block mb-1 font-header">Прибыль</span>
+                                                <span class="text-green-500 font-header font-black text-[11px]"
+                                                    id="dep-profit">+$0</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="pt-6 border-t border-white/5">
+                                            <p id="dep-total-label"
+                                                class="text-white/20 text-[10px] uppercase font-black tracking-[0.3em] font-header mb-1">
+                                                Итого через 30 дней</p>
+                                            <div class="text-4xl sm:text-5xl md:text-6xl font-header font-black text-white tracking-tighter leading-none"
+                                                id="dep-total" style="word-break: keep-all; overflow-wrap: normal;">$0
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button id="dep-sendBtn" onclick="sendDepositOrder()"
+                                        class="btn-atlant w-full py-5 rounded-xl mt-8 flex items-center justify-center gap-3">
+                                        Оформить вклад
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="3">
+                                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                                            <polyline points="12 5 19 12 12 19"></polyline>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -261,16 +623,22 @@
                 © 2026 AtlantWorld. Все права защищены.
             </p>
             <p class="text-white/20 text-[11px] font-medium leading-relaxed max-w-2xl mx-auto">
-                AtlantWorld не связан с Mojang A.B. Проект является независимым RolePlay сервером. Вся коммерческая деятельность проекта, включая пожертвования и игровые услуги, полностью соответствует политике и правилам EULA от Mojang A.B.
+                AtlantWorld не связан с Mojang A.B. Проект является независимым RolePlay сервером. Вся коммерческая
+                деятельность проекта, включая пожертвования и игровые услуги, полностью соответствует политике и
+                правилам EULA от Mojang A.B.
             </p>
         </div>
     </footer>
 
-    <div id="modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center z-[200] p-6">
+    <div id="modal"
+        class="fixed inset-0 bg-black/90 backdrop-blur-md hidden flex items-center justify-center z-[200] p-6">
         <div class="glass max-w-sm w-full p-10 rounded-[2.5rem] text-center border border-orange-500/30">
-            <div class="w-14 h-14 bg-orange-600 rounded-2xl flex items-center justify-center text-white text-2xl mx-auto mb-6">✓</div>
+            <div
+                class="w-14 h-14 bg-orange-600 rounded-2xl flex items-center justify-center text-white text-2xl mx-auto mb-6">
+                ✓</div>
             <h3 class="text-2xl font-header font-black mb-3 orange-gradient uppercase italic">Принято</h3>
-            <p class="text-white/40 mb-8 text-xs font-medium leading-relaxed">Заявка успешно передана. Ожидайте ответа от сотрудников HelBank в Discord.</p>
+            <p class="text-white/40 mb-8 text-xs font-medium leading-relaxed">Заявка успешно передана. Ожидайте ответа
+                от сотрудников HelBank в Discord.</p>
             <button class="btn-atlant w-full py-5 rounded-xl" onclick="closeModal()">Понятно</button>
         </div>
     </div>
@@ -286,21 +654,104 @@
             input.value = input.value.replace(/[^a-zA-Z0-9._]/g, '');
         }
 
+        let activePromo = null;
+        let promoTimeout = null;
+
+        async function verifyPromo() {
+            const promoInput = document.getElementById('promo');
+            const statusEl = document.getElementById('promo-status');
+            const val = promoInput.value.trim();
+
+            clearTimeout(promoTimeout);
+
+            if (val.length === 0) {
+                activePromo = null;
+                statusEl.classList.add('hidden');
+                promoInput.classList.remove('border-green-500', 'border-red-500');
+                promoInput.classList.add('border-transparent');
+                updateCalc();
+                return;
+            }
+
+            statusEl.classList.remove('hidden', 'text-green-500', 'text-red-500');
+            statusEl.classList.add('text-white/50');
+            statusEl.innerText = "Проверка...";
+
+            promoTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch(WORKER_URL + "/checkPromo", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ promo: val })
+                    });
+                    const data = await res.json();
+
+                    if (data.valid) {
+                        activePromo = val;
+                        statusEl.classList.remove('text-white/50', 'text-red-500');
+                        statusEl.classList.add('text-green-500');
+                        statusEl.innerText = "✓ Промокод применен!";
+                        promoInput.classList.remove('border-transparent', 'border-red-500');
+                        promoInput.classList.add('border-green-500');
+                    } else {
+                        activePromo = null;
+                        statusEl.classList.remove('text-white/50', 'text-green-500');
+                        statusEl.classList.add('text-red-500');
+                        statusEl.innerText = "✗ Не найден";
+                        promoInput.classList.remove('border-transparent', 'border-green-500');
+                        promoInput.classList.add('border-red-500');
+                    }
+                } catch (e) {
+                    activePromo = null;
+                    statusEl.innerText = "";
+                }
+                updateCalc();
+            }, 600);
+        }
+
         function updateCalc() {
             const amountInput = document.getElementById('amount');
             const daysInput = document.getElementById('days');
             const totalDisplay = document.getElementById('total');
             const overpaymentDisplay = document.getElementById('overpayment');
-            
+            const discountLabel = document.getElementById('discount-label');
+            const overpaymentBox = document.getElementById('overpayment-box');
+
             const amount = parseFloat(amountInput.value) || 0;
             let days = parseFloat(daysInput.value) || 0;
-            
+            const promo = activePromo;
+
             const dailyRate = 0.50 / 30;
-            const total = amount * (1 + (dailyRate * days));
-            
+            let total = amount * (1 + (dailyRate * days));
+
+            let discountAmount = 0;
+            if (promo && amount > 0) {
+                discountAmount = amount * 0.05;
+                total -= discountAmount;
+            }
+            if (total < amount) total = amount;
+
             const formattedTotal = "$" + Math.round(total).toLocaleString();
             totalDisplay.innerText = formattedTotal;
-            overpaymentDisplay.innerText = "+$" + Math.round(total - amount).toLocaleString();
+            const overpaymentStr = "+$" + Math.round(total - amount).toLocaleString();
+            overpaymentDisplay.innerText = overpaymentStr;
+
+            if (overpaymentStr.length > 12) {
+                overpaymentBox.classList.remove('col-span-1');
+                overpaymentBox.classList.add('col-span-2');
+                overpaymentDisplay.className = "text-xl sm:text-3xl font-black text-red-500 break-words";
+            } else {
+                overpaymentBox.classList.remove('col-span-2');
+                overpaymentBox.classList.add('col-span-1');
+                overpaymentDisplay.className = "text-xl sm:text-2xl font-black text-red-500 break-words";
+            }
+
+            if (promo && amount > 0) {
+                discountLabel.innerText = `-$${Math.round(discountAmount).toLocaleString()} (скидка 5%)`;
+                discountLabel.classList.remove('hidden');
+            } else {
+                discountLabel.classList.add('hidden');
+            }
 
             const length = formattedTotal.length;
             if (length > 13) {
@@ -336,6 +787,7 @@
         async function sendOrder() {
             const nick = document.getElementById('nickname').value;
             const ds = document.getElementById('discord').value;
+            const promo = activePromo ? activePromo : "";
             const amount = parseFloat(document.getElementById('amount').value);
             const days = parseInt(document.getElementById('days').value);
             const total = document.getElementById('total').innerText;
@@ -346,7 +798,96 @@
             btn.disabled = true;
             btn.innerText = "ОТПРАВКА...";
 
-            const msg = `🏦 *НОВАЯ ЗАЯВКА HELBANK*\n\n👤 *Игрок:* \`${nick}\`\n💬 *Discord:* \`${ds}\`\n💰 *Сумма:* $${amount}\n⏳ *Срок:* ${days} дн.\n📈 *Итого:* ${total}`;
+            let msg = `🏦 *НОВАЯ ЗАЯВКА HELBANK*\n\n👤 *Игрок:* \`${nick}\`\n💬 *Discord:* \`${ds}\`\n💰 *Сумма:* $${amount}\n⏳ *Срок:* ${days} дн.`;
+            if (promo) msg += `\n🎟 *Промокод:* \`${promo}\` (Скидка 5%)`;
+            msg += `\n📈 *Итого:* ${total}`;
+
+            try {
+                const payload = {
+                    type: "credit",
+                    message: msg,
+                    amount: amount,
+                    promo: promo
+                };
+
+                const response = await fetch(WORKER_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    document.getElementById('modal').classList.remove('hidden');
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Оформить заявку";
+            }
+        }
+
+        function updateDepositCalc() {
+            const amountInput = document.getElementById('dep-amount');
+            const daysInput = document.getElementById('dep-days');
+            const totalDisplay = document.getElementById('dep-total');
+            const profitDisplay = document.getElementById('dep-profit');
+            const labelDisplay = document.getElementById('dep-total-label');
+
+            const amount = parseFloat(amountInput.value) || 0;
+            let days = parseInt(daysInput.value) || 0;
+
+            if (daysInput.value !== "" && days < 7) {
+                daysInput.classList.add('border-red-500');
+            } else {
+                daysInput.classList.remove('border-red-500');
+            }
+
+            let calcDays = Math.max(days, 7);
+            if (amount === 0 && days === 0) calcDays = 30;
+
+            const dailyRate = 0.10 / 30;
+            const profit = amount * dailyRate * calcDays;
+            const total = amount + profit;
+
+            labelDisplay.innerText = `ИТОГО ЧЕРЕЗ ${calcDays} ДНЕЙ`;
+
+            const formattedTotal = "$" + Math.round(total).toLocaleString();
+            totalDisplay.innerText = formattedTotal;
+            profitDisplay.innerText = "+$" + Math.round(profit).toLocaleString();
+
+            const length = formattedTotal.length;
+            if (length > 16) {
+                totalDisplay.style.fontSize = "1.25rem";
+            } else if (length > 13) {
+                totalDisplay.style.fontSize = "1.5rem";
+            } else if (length > 10) {
+                totalDisplay.style.fontSize = "2rem";
+            } else {
+                totalDisplay.style.fontSize = "";
+            }
+        }
+
+        async function sendDepositOrder() {
+            const nick = document.getElementById('dep-nickname').value;
+            const ds = document.getElementById('dep-discord').value;
+            const amount = parseFloat(document.getElementById('dep-amount').value);
+            const days = parseInt(document.getElementById('dep-days').value);
+            const total = document.getElementById('dep-total').innerText;
+            const profit = document.getElementById('dep-profit').innerText;
+            const btn = document.getElementById('dep-sendBtn');
+
+            if (days < 7) {
+                alert("Минимальный срок вклада - 7 дней!");
+                return;
+            }
+
+            if (!nick || !ds || isNaN(amount) || isNaN(days)) return;
+
+            btn.disabled = true;
+            btn.innerText = "ОТПРАВКА...";
+
+            const msg = `🏦 *НОВАЯ ЗАЯВКА НА ВКЛАД*\n\n👤 *Игрок:* \`${nick}\`\n💬 *Discord:* \`${ds}\`\n💰 *Сумма:* $${amount}\n⏳ *Срок:* ${days} дн.\n📈 *Прибыль за период:* ${profit}\n💸 *К возврату:* ${total}`;
 
             try {
                 const response = await fetch(WORKER_URL, {
@@ -362,7 +903,58 @@
                 console.error(e);
             } finally {
                 btn.disabled = false;
-                btn.innerText = "Оформить заявку";
+                btn.innerText = "Оформить вклад";
+            }
+        }
+
+        function toggleDepositInfo() {
+            const block = document.getElementById('dep-info-block');
+            const chevron = document.getElementById('dep-info-chevron');
+            if (block.classList.contains('open')) {
+                block.classList.remove('open');
+                block.style.maxHeight = '0px';
+                chevron.style.transform = 'rotate(0deg)';
+            } else {
+                block.classList.add('open');
+                block.style.maxHeight = block.scrollHeight + 'px';
+                chevron.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        function switchTab(tab) {
+            const creditBtn = document.getElementById('tab-credit');
+            const depositBtn = document.getElementById('tab-deposit');
+            const creditSec = document.getElementById('credit-section');
+            const depositSec = document.getElementById('deposit-section');
+            const titleWord = document.getElementById('main-title-word');
+            const mainSub = document.getElementById('main-subtitle');
+
+            if (tab === 'credit') {
+                creditBtn.classList.add('active', 'text-white');
+                creditBtn.classList.remove('text-white/50');
+                depositBtn.classList.remove('active', 'text-white');
+                depositBtn.classList.add('text-white/50');
+
+                creditSec.classList.remove('form-hidden');
+                creditSec.classList.add('form-visible');
+                depositSec.classList.remove('form-visible');
+                depositSec.classList.add('form-hidden');
+
+                if (titleWord) titleWord.innerText = 'кредита';
+                if (mainSub) mainSub.innerText = 'Система моментального кредитования HelBank.';
+            } else {
+                depositBtn.classList.add('active', 'text-white');
+                depositBtn.classList.remove('text-white/50');
+                creditBtn.classList.remove('active', 'text-white');
+                creditBtn.classList.add('text-white/50');
+
+                depositSec.classList.remove('form-hidden');
+                depositSec.classList.add('form-visible');
+                creditSec.classList.remove('form-visible');
+                creditSec.classList.add('form-hidden');
+
+                if (titleWord) titleWord.innerText = 'вклада';
+                if (mainSub) mainSub.innerText = 'Надежные инвестиции под 10% в месяц.';
             }
         }
 
@@ -371,4 +963,5 @@
         }
     </script>
 </body>
+
 </html>
