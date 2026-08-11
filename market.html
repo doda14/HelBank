@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HelBank — Биржа</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --orange: #ff7010; --bg: #0a0a0b; }
+        * { box-sizing: border-box; }
+        body { margin: 0; min-height: 100vh; color: #e2e8f0; background: radial-gradient(circle at 10% 20%, rgba(255,112,16,.08), transparent 35%), radial-gradient(circle at 90% 80%, rgba(255,112,16,.05), transparent 38%), var(--bg); font-family: 'Golos Text', sans-serif; }
+        .font-header { font-family: 'Unbounded', sans-serif; letter-spacing: -.02em; }
+        .glass { background: rgba(255,255,255,.025); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,.07); box-shadow: 0 25px 50px -12px rgba(0,0,0,.5); }
+        .chart-grid { background-image: linear-gradient(rgba(255,255,255,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.055) 1px, transparent 1px); background-size: 100% 25%, 20% 100%; }
+        .period.active { background: #ff7010; color: white; box-shadow: 0 4px 15px rgba(255,112,16,.3); }
+        .period { transition: .2s ease; }
+        .order-side { transition: .2s ease; }
+        .order-side.active-buy { background: #ff7010; color: white; box-shadow: 0 4px 15px rgba(255,112,16,.3); }
+        .order-side.active-sell { background: #dc2626; color: white; box-shadow: 0 4px 15px rgba(220,38,38,.3); }
+        .tick { animation: tick .4s ease-out; }
+        @keyframes tick { from { opacity: .4; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .chart-tooltip { pointer-events: none; transition: opacity .15s ease, transform .08s linear; }
+        .chart-crosshair { pointer-events: none; }
+        .input-field { width: 100%; color: white; background: rgba(255,255,255,.035); border: 1px solid rgba(255,255,255,.09); transition: border .2s, box-shadow .2s; }
+        .input-field:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,112,16,.12); }
+    </style>
+</head>
+<body class="px-4 sm:px-8">
+    <header class="max-w-7xl mx-auto py-6 flex items-center justify-between gap-4">
+        <a href="index.html" class="group no-underline">
+            <h1 class="text-2xl sm:text-3xl font-header font-black uppercase italic text-white leading-none">HelBank</h1>
+            <p class="text-[9px] uppercase tracking-[.35em] text-white/25 mt-2 font-bold">Financial Solutions</p>
+        </a>
+        <a href="index.html" class="text-[10px] sm:text-xs uppercase tracking-[.15em] font-header font-bold text-white/50 hover:text-orange-400 transition-colors">← Банк</a>
+    </header>
+
+    <main class="max-w-7xl mx-auto pb-16 pt-6">
+        <div class="mb-8">
+            <p class="text-orange-400 font-header font-bold text-[10px] uppercase tracking-[.28em] mb-3">HelBank Securities</p>
+            <h2 class="font-header font-black text-3xl sm:text-5xl italic text-white">Биржа <span class="text-orange-400">HBK</span></h2>
+            <p class="text-white/40 mt-4 max-w-xl">Котировка акций HelBank синхронизируется для всех посетителей и обновляется каждые 12 секунд.</p>
+        </div>
+
+        <section class="glass rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 md:p-10">
+            <div class="flex flex-col lg:flex-row justify-between gap-6 border-b border-white/5 pb-8 mb-6">
+                <div>
+                    <div class="flex items-center gap-3 mb-3"><span class="w-3 h-3 rounded-full bg-green-400 shadow-[0_0_12px_rgba(74,222,128,.7)]"></span><span class="text-white/30 text-[10px] uppercase tracking-[.2em] font-header">Торги идут</span></div>
+                    <p class="text-white/30 text-[10px] uppercase tracking-[.25em] font-header mb-2">HBK · Акции HelBank</p>
+                    <div id="price" class="font-header font-black text-4xl sm:text-6xl text-white tracking-tighter">$5 000 000</div>
+                </div>
+                <div class="lg:text-right lg:self-end">
+                    <div id="change" class="font-header font-black text-xl text-green-400">+$0 · +0.00%</div>
+                    <p id="updated" class="mt-2 text-white/25 text-[10px] uppercase tracking-widest">Загрузка котировки…</p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 mb-5">
+                <span class="text-white/25 text-[10px] font-header uppercase tracking-widest mr-2">Период</span>
+                <button class="period active rounded-lg px-4 py-2 text-[10px] font-header font-bold text-white/55 bg-white/5" data-points="25">5 мин</button>
+                <button class="period rounded-lg px-4 py-2 text-[10px] font-header font-bold text-white/55 bg-white/5" data-points="75">15 мин</button>
+                <button class="period rounded-lg px-4 py-2 text-[10px] font-header font-bold text-white/55 bg-white/5" data-points="300">1 час</button>
+            </div>
+            <div id="chart-box" class="chart-grid h-72 sm:h-[420px] rounded-2xl border border-white/5 relative overflow-hidden p-4 sm:p-6 cursor-crosshair">
+                <svg viewBox="0 0 1000 400" preserveAspectRatio="none" class="w-full h-full overflow-visible" aria-label="График котировки HBK">
+                    <defs><linearGradient id="fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ff7010" stop-opacity=".32"/><stop offset="1" stop-color="#ff7010" stop-opacity="0"/></linearGradient></defs>
+                    <path id="area" fill="url(#fill)"></path>
+                    <path id="line" fill="none" stroke="#ff7010" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path>
+                    <line id="crosshair" class="chart-crosshair" x1="0" y1="0" x2="0" y2="400" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-dasharray="6 6" opacity="0"></line>
+                    <circle id="chart-dot" class="chart-crosshair" cx="0" cy="0" r="8" fill="#ff7010" stroke="#fff" stroke-width="3" opacity="0"></circle>
+                </svg>
+                <div id="chart-tooltip" class="chart-tooltip absolute z-10 top-5 left-0 opacity-0 -translate-x-1/2 rounded-xl border border-orange-400/40 bg-[#151011]/95 px-4 py-3 shadow-2xl">
+                    <p id="tooltip-price" class="font-header font-black text-sm text-white">$0</p>
+                    <p id="tooltip-time" class="mt-1 text-[10px] uppercase tracking-widest text-white/45">Сейчас</p>
+                </div>
+                <div class="absolute bottom-4 left-5 right-5 flex justify-between text-[9px] font-header text-white/25 uppercase tracking-widest"><span id="start-label">5 минут назад</span><span>сейчас</span></div>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5">
+            <div class="glass rounded-2xl p-5"><p class="text-white/25 text-[10px] uppercase tracking-widest font-header mb-2">Тикер</p><p class="font-header font-black text-xl text-white">HBK</p></div>
+            <div class="glass rounded-2xl p-5"><p class="text-white/25 text-[10px] uppercase tracking-widest font-header mb-2">Открытие торгов</p><p class="font-header font-black text-xl text-white">$5 000 000</p></div>
+            <div class="glass rounded-2xl p-5"><p class="text-white/25 text-[10px] uppercase tracking-widest font-header mb-2">Режим</p><p class="font-header font-black text-xl text-green-400">ONLINE</p></div>
+        </section>
+
+        <section class="glass rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 md:p-10 mt-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div>
+                <div class="flex gap-2 mb-6">
+                    <button id="side-buy" class="order-side active-buy rounded-xl px-5 py-3 text-[10px] uppercase tracking-widest font-header font-bold" onclick="setOrderSide('buy')">Купить</button>
+                    <button id="side-sell" class="order-side rounded-xl px-5 py-3 text-[10px] uppercase tracking-widest font-header font-bold bg-white/5 text-white/45" onclick="setOrderSide('sell')">Продать</button>
+                </div>
+                <p id="order-form-label" class="text-orange-400 font-header font-bold text-[10px] uppercase tracking-[.25em] mb-3">Покупка акций</p>
+                <h3 class="font-header font-black text-2xl sm:text-3xl text-white italic">Заявка на <span id="order-form-action" class="text-orange-400">покупку</span></h3>
+                <p id="order-form-description" class="text-white/40 text-sm mt-4 leading-relaxed">Укажите данные и количество акций. Сотрудник HelBank свяжется с вами в Discord для оформления покупки.</p>
+                <div class="mt-7 space-y-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div><label class="block text-white/30 text-[10px] uppercase tracking-[.16em] font-header font-bold mb-2">Никнейм (EN)</label><input id="buy-nickname" maxlength="16" placeholder="Ваш ник" class="input-field rounded-xl px-4 py-4 font-bold" oninput="this.value=this.value.replace(/[^a-zA-Z0-9_]/g,'')"></div>
+                        <div><label class="block text-white/30 text-[10px] uppercase tracking-[.16em] font-header font-bold mb-2">Discord</label><input id="buy-discord" maxlength="64" placeholder="Ваш Discord" class="input-field rounded-xl px-4 py-4 font-bold" oninput="this.value=this.value.replace(/[^a-zA-Z0-9._]/g,'')"></div>
+                    </div>
+                    <div><label class="block text-white/30 text-[10px] uppercase tracking-[.16em] font-header font-bold mb-2">Количество акций</label><input id="buy-quantity" type="number" min="1" max="100000" value="1" class="input-field rounded-xl px-4 py-4 text-xl font-black" oninput="updateOrderTotal()"></div>
+                    <div class="flex justify-center"><div class="cf-turnstile" data-sitekey="0x4AAAAAADZWUMVmo_9A6_Ye" data-theme="dark" data-size="flexible" data-language="ru"></div></div>
+                </div>
+            </div>
+            <aside class="bg-black/20 rounded-[1.75rem] border border-white/5 p-6 sm:p-8 flex flex-col justify-between">
+                <div>
+                    <p id="order-summary-title" class="text-white/25 text-[10px] uppercase tracking-[.2em] font-header mb-6">Ордер на покупку</p>
+                    <div class="flex justify-between gap-4 border-b border-white/5 pb-4 mb-4"><span class="text-white/40">Цена одной акции</span><span id="order-unit-price" class="font-header text-xs font-black text-white">$5 000 000</span></div>
+                    <div class="flex justify-between gap-4 border-b border-white/5 pb-4 mb-4"><span class="text-white/40">Количество</span><span id="order-quantity" class="font-header text-xs font-black text-white">1 шт.</span></div>
+                    <p id="order-total-label" class="text-white/25 text-[10px] uppercase tracking-[.2em] font-header mt-8 mb-2">Сумма покупки</p>
+                    <p id="order-total" class="font-header font-black text-3xl sm:text-4xl text-orange-400 tracking-tighter">$5 000 000</p>
+                </div>
+                <button id="buy-button" onclick="submitStockOrder()" class="mt-10 rounded-xl bg-[#ff7010] hover:bg-[#ff821f] disabled:opacity-50 text-white py-5 font-header font-bold text-xs uppercase tracking-widest transition-all hover:shadow-[0_0_25px_rgba(255,112,16,.35)]">Отправить заявку на покупку</button>
+            </aside>
+        </section>
+    </main>
+
+    <div id="order-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-5">
+        <div class="glass max-w-sm w-full rounded-[2rem] p-8 text-center border border-orange-400/30">
+            <div class="w-14 h-14 rounded-2xl bg-orange-500/15 flex items-center justify-center text-orange-400 mx-auto mb-5 text-2xl">✓</div>
+            <h3 class="font-header font-black text-xl text-white">Заявка принята</h3>
+            <p id="order-modal-text" class="text-white/45 text-sm leading-relaxed mt-4">Мы получили вашу заявку на покупку акций. Ожидайте связь в Discord.</p>
+            <button onclick="closeOrderModal()" class="mt-7 w-full rounded-xl bg-[#ff7010] py-4 text-white font-header font-bold text-xs uppercase tracking-widest">Понятно</button>
+        </div>
+    </div>
+
+    <script>
+        const WORKER_URL = 'https://helbank-api.naeballoha99.workers.dev';
+        let market = { price: 5000000, history: Array(25).fill(5000000) };
+        let period = 25;
+        let orderSide = 'buy';
+        let visibleHistory = [5000000];
+        let chartPoints = [{ x: 500, y: 210 }];
+        const labels = { 25: '5 минут назад', 75: '15 минут назад', 300: '1 час назад' };
+        const money = value => '$' + Math.round(value).toLocaleString('ru-RU');
+
+        function render() {
+            const all = market.history.length ? market.history : [5000000];
+            const history = all.slice(-period);
+            visibleHistory = history;
+            const price = Number(market.price) || history.at(-1) || 5000000;
+            const previous = history.length > 1 ? history.at(-2) : price;
+            const delta = price - previous;
+            const positive = delta >= 0;
+            document.getElementById('price').textContent = money(price);
+            document.getElementById('price').classList.remove('tick'); void document.getElementById('price').offsetWidth; document.getElementById('price').classList.add('tick');
+            const change = document.getElementById('change');
+            change.textContent = `${positive ? '+' : '−'}${money(Math.abs(delta))} · ${positive ? '+' : '−'}${Math.abs(delta / previous * 100).toFixed(2)}%`;
+            change.className = `font-header font-black text-xl ${positive ? 'text-green-400' : 'text-red-400'}`;
+            document.getElementById('updated').textContent = 'Обновлено ' + new Date().toLocaleTimeString('ru-RU');
+            document.getElementById('start-label').textContent = labels[period];
+
+            const min = Math.min(...history), max = Math.max(...history), range = Math.max(max - min, 1), flatLine = min === max;
+            chartPoints = history.map((value, index) => ({
+                x: history.length === 1 ? 500 : index / (history.length - 1) * 1000,
+                y: flatLine ? 200 : 360 - (value - min) / range * 300
+            }));
+            const d = chartPoints.map((point, index) => `${index ? 'L' : 'M'} ${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(' ');
+            document.getElementById('line').setAttribute('d', d);
+            document.getElementById('area').setAttribute('d', `${d} L 1000,400 L 0,400 Z`);
+            updateOrderTotal();
+        }
+
+        function getTimeLabel(index) {
+            const secondsAgo = (visibleHistory.length - 1 - index) * 12;
+            if (secondsAgo < 6) return 'Сейчас';
+            if (secondsAgo < 60) return `${secondsAgo} сек. назад`;
+            const minutes = Math.round(secondsAgo / 60);
+            return `${minutes} мин. назад`;
+        }
+
+        function showChartValue(event) {
+            if (visibleHistory.length < 2) return;
+            const box = document.getElementById('chart-box');
+            const rect = box.getBoundingClientRect();
+            const progress = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+            const index = Math.round(progress * (visibleHistory.length - 1));
+            const point = chartPoints[index];
+            const tooltip = document.getElementById('chart-tooltip');
+            tooltip.style.left = `${Math.max(80, Math.min(rect.width - 80, progress * rect.width))}px`;
+            tooltip.style.opacity = '1';
+            tooltip.style.transform = 'translateX(-50%)';
+            document.getElementById('tooltip-price').textContent = money(visibleHistory[index]);
+            document.getElementById('tooltip-time').textContent = getTimeLabel(index);
+            const crosshair = document.getElementById('crosshair');
+            const dot = document.getElementById('chart-dot');
+            crosshair.setAttribute('x1', point.x); crosshair.setAttribute('x2', point.x); crosshair.setAttribute('opacity', '1');
+            dot.setAttribute('cx', point.x); dot.setAttribute('cy', point.y); dot.setAttribute('opacity', '1');
+        }
+
+        function hideChartValue() {
+            document.getElementById('chart-tooltip').style.opacity = '0';
+            document.getElementById('crosshair').setAttribute('opacity', '0');
+            document.getElementById('chart-dot').setAttribute('opacity', '0');
+        }
+
+        function updateOrderTotal() {
+            const quantityInput = document.getElementById('buy-quantity');
+            if (!quantityInput) return;
+            const quantity = Math.max(1, Math.min(100000, Math.floor(Number(quantityInput.value) || 1)));
+            const unitPrice = Number(market.price) || 5000000;
+            document.getElementById('order-unit-price').textContent = money(unitPrice);
+            document.getElementById('order-quantity').textContent = quantity.toLocaleString('ru-RU') + ' шт.';
+            document.getElementById('order-total').textContent = money(unitPrice * quantity);
+        }
+
+        function setOrderSide(side) {
+            orderSide = side === 'sell' ? 'sell' : 'buy';
+            const selling = orderSide === 'sell';
+            document.getElementById('side-buy').className = `order-side rounded-xl px-5 py-3 text-[10px] uppercase tracking-widest font-header font-bold ${selling ? 'bg-white/5 text-white/45' : 'active-buy'}`;
+            document.getElementById('side-sell').className = `order-side rounded-xl px-5 py-3 text-[10px] uppercase tracking-widest font-header font-bold ${selling ? 'active-sell' : 'bg-white/5 text-white/45'}`;
+            document.getElementById('order-form-label').textContent = selling ? 'Продажа акций' : 'Покупка акций';
+            document.getElementById('order-form-action').textContent = selling ? 'продажу' : 'покупку';
+            document.getElementById('order-form-description').textContent = selling
+                ? 'Укажите данные и количество акций. Сотрудник HelBank свяжется с вами в Discord для оформления продажи.'
+                : 'Укажите данные и количество акций. Сотрудник HelBank свяжется с вами в Discord для оформления покупки.';
+            document.getElementById('order-summary-title').textContent = selling ? 'Ордер на продажу' : 'Ордер на покупку';
+            document.getElementById('order-total-label').textContent = selling ? 'Сумма продажи' : 'Сумма покупки';
+            const button = document.getElementById('buy-button');
+            button.textContent = selling ? 'Отправить заявку на продажу' : 'Отправить заявку на покупку';
+            button.classList.toggle('bg-[#ff7010]', !selling);
+            button.classList.toggle('hover:bg-[#ff821f]', !selling);
+            button.classList.toggle('bg-red-600', selling);
+            button.classList.toggle('hover:bg-red-500', selling);
+        }
+
+        function getTurnstileToken() {
+            const input = document.querySelector('[name="cf-turnstile-response"]');
+            return input ? input.value : '';
+        }
+
+        function resetTurnstile() {
+            try { if (typeof turnstile !== 'undefined') turnstile.reset(); } catch (error) { }
+        }
+
+        async function submitStockOrder() {
+            const nickname = document.getElementById('buy-nickname').value.trim();
+            const discord = document.getElementById('buy-discord').value.trim();
+            const quantity = Math.floor(Number(document.getElementById('buy-quantity').value));
+            const token = getTurnstileToken();
+            const button = document.getElementById('buy-button');
+            if (!nickname || !discord || !Number.isInteger(quantity) || quantity < 1) { alert('Заполните никнейм, Discord и количество акций.'); return; }
+            if (!token) { alert('Подтвердите, что вы не робот.'); return; }
+            button.disabled = true;
+            button.textContent = 'Отправка…';
+            try {
+                const response = await fetch(WORKER_URL + '/submit', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'stock', side: orderSide, nickname, discord, quantity, turnstileToken: token })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.error || 'Не удалось отправить заявку.');
+                document.getElementById('order-modal-text').textContent = orderSide === 'sell'
+                    ? 'Мы получили вашу заявку на продажу акций. Ожидайте связь в Discord.'
+                    : 'Мы получили вашу заявку на покупку акций. Ожидайте связь в Discord.';
+                document.getElementById('order-modal').classList.remove('hidden');
+                document.getElementById('order-modal').classList.add('flex');
+            } catch (error) {
+                alert(error.message || 'Не удалось отправить заявку. Попробуйте ещё раз.');
+            } finally {
+                resetTurnstile();
+                button.disabled = false;
+                button.textContent = orderSide === 'sell' ? 'Отправить заявку на продажу' : 'Отправить заявку на покупку';
+            }
+        }
+
+        function closeOrderModal() {
+            document.getElementById('order-modal').classList.add('hidden');
+            document.getElementById('order-modal').classList.remove('flex');
+        }
+
+        async function refresh() {
+            try {
+                const response = await fetch(WORKER_URL + '/market', { cache: 'no-store' });
+                if (!response.ok) throw new Error('market unavailable');
+                market = await response.json();
+            } catch (error) {
+                if (market.history.length === 1) market = { price: 5000000, history: Array(25).fill(5000000) };
+            }
+            render();
+        }
+
+        document.querySelectorAll('.period').forEach(button => button.addEventListener('click', () => {
+            period = Number(button.dataset.points);
+            document.querySelectorAll('.period').forEach(item => item.classList.toggle('active', item === button));
+            render();
+        }));
+        document.getElementById('chart-box').addEventListener('pointermove', showChartValue);
+        document.getElementById('chart-box').addEventListener('pointerleave', hideChartValue);
+        refresh();
+        setInterval(refresh, 12000);
+    </script>
+</body>
+</html>
