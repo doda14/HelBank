@@ -25,6 +25,8 @@
         .chart-crosshair { pointer-events: none; }
         .input-field { width: 100%; color: white; background: rgba(255,255,255,.035); border: 1px solid rgba(255,255,255,.09); transition: border .2s, box-shadow .2s; }
         .input-field:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,112,16,.12); }
+        #help-toast { transform: translateY(24px); opacity: 0; transition: transform .35s ease, opacity .35s ease; will-change: transform, opacity; }
+        #help-toast.show { transform: translateY(0); opacity: 1; }
     </style>
 </head>
 <body class="px-4 sm:px-8">
@@ -123,6 +125,22 @@
             <h3 class="font-header font-black text-xl text-white">Заявка принята</h3>
             <p id="order-modal-text" class="text-white/45 text-sm leading-relaxed mt-4">Мы получили вашу заявку на покупку акций. Ожидайте связь в Discord.</p>
             <button onclick="closeOrderModal()" class="mt-7 w-full rounded-xl bg-[#ff7010] py-4 text-white font-header font-bold text-xs uppercase tracking-widest">Понятно</button>
+        </div>
+    </div>
+
+    <div id="help-toast" class="hidden fixed bottom-5 right-5 z-[160] max-w-[340px] w-full">
+        <div class="relative glass rounded-[1.5rem] p-4 pr-12 border border-orange-400/30 shadow-[0_25px_60px_-15px_rgba(0,0,0,.7)]">
+            <button id="help-close" aria-label="Закрыть" class="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 text-white/45 hover:text-white text-sm leading-none transition-colors">✕</button>
+            <div class="flex items-center gap-3">
+                <img src="https://i.postimg.cc/bDNVfRZ5/avatar-Head2.png" alt="sosaso" class="w-12 h-12 rounded-xl object-cover border border-orange-400/40 shrink-0">
+                <div>
+                    <p class="font-header font-bold text-sm text-white leading-snug">Помоги человеку выйти из деморгана</p>
+                    <p class="font-header font-black text-xs text-orange-400 mt-1">sosaso</p>
+                </div>
+            </div>
+            <a href="https://atlantworld.com/shop/other/" target="_blank" rel="noopener" class="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#ff7010] hover:bg-[#ff821f] text-white py-3 font-header font-bold text-[10px] uppercase tracking-widest transition-colors">
+                Помочь выходом из деморгана
+            </a>
         </div>
     </div>
 
@@ -306,6 +324,46 @@
         document.getElementById('chart-box').addEventListener('pointerleave', hideChartValue);
         refresh();
         setInterval(refresh, 12000);
+
+        (function () {
+            const toast = document.getElementById('help-toast');
+            if (!toast) return;
+            const closeBtn = document.getElementById('help-close');
+            let shown = false;
+            let hideTimer = null;
+
+            function showToast() {
+                if (!toast || shown) return;
+                shown = true;
+                toast.classList.remove('hidden');
+                toast.classList.add('flex');
+                requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('show')));
+                hideTimer = setTimeout(hideToast, 20000);
+            }
+
+            function hideToast() {
+                if (!toast || !shown) return;
+                shown = false;
+                clearTimeout(hideTimer);
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.classList.add('hidden');
+                    toast.classList.remove('flex');
+                }, 400);
+            }
+
+            if (closeBtn) closeBtn.addEventListener('click', hideToast);
+
+            function scheduleNext() {
+                setTimeout(() => {
+                    showToast();
+                    scheduleNext();
+                }, 100000 + Math.random() * 120000);
+            }
+
+            setTimeout(showToast, 8000);
+            scheduleNext();
+        })();
     </script>
 </body>
 </html>
