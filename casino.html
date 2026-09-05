@@ -1,733 +1,654 @@
 <!DOCTYPE html>
-<html lang="ru" class="dark">
+<html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HelBank | Казино</title>
+    <title>HelBank | Казино & Кейсы</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0b0b0e; color: #f3f4f6; }
-        .glass-panel { background: rgba(22, 22, 27, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .btn-orange { background: linear-gradient(135deg, #ff8c00, #e67e00); color: #fff; font-weight: 700; transition: all 0.2s; }
-        .btn-orange:hover { background: linear-gradient(135deg, #ffa024, #ff8c00); transform: translateY(-1px); box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3); }
-        .btn-orange:active { transform: translateY(0); }
-        .coin-spin { animation: spin 0.6s linear infinite; }
-        @keyframes spin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
-        .slot-reel { transition: transform 0.1s ease-in-out; }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #0f0f13; }
-        ::-webkit-scrollbar-thumb { background: #262630; border-radius: 3px; }
+        :root {
+            --atlant-orange: #ff7010;
+            --bg-dark: #0a0a0b;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0b; }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--atlant-orange); }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #e2e8f0;
+            font-family: 'Golos Text', sans-serif;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(255, 112, 16, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 112, 16, 0.05) 0%, transparent 40%);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .font-header { font-family: 'Unbounded', sans-serif; letter-spacing: -0.02em; }
+        .glass {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .orange-gradient {
+            background: linear-gradient(90deg, #ff7010, #ffb310);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .btn-atlant {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--atlant-orange);
+            color: #fff;
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+        .btn-atlant:hover:not(:disabled) {
+            box-shadow: 0 0 30px rgba(255, 112, 16, 0.4);
+            transform: translateY(-2px);
+        }
+        .input-field {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: border 0.3s, box-shadow 0.3s;
+            color: white;
+            width: 100%;
+        }
+        .input-field:focus {
+            border-color: var(--atlant-orange);
+            outline: none;
+            box-shadow: 0 0 15px rgba(255, 112, 16, 0.2);
+        }
+        .tab-game { transition: all 0.2s ease; }
+        .tab-game.active {
+            background: var(--atlant-orange);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 112, 16, 0.3);
+        }
+
+        /* Case & Roulette Tape */
+        .case-roulette-wrapper {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            height: 140px;
+            border-radius: 1rem;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(255, 112, 16, 0.3);
+        }
+        .case-roulette-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0; bottom: 0; left: 50%;
+            width: 4px;
+            background: #ff7010;
+            box-shadow: 0 0 15px #ff7010;
+            z-index: 20;
+            transform: translateX(-50%);
+        }
+        .case-tape, .roulette-tape {
+            display: flex;
+            gap: 12px;
+            position: absolute;
+            left: 0;
+            top: 15px;
+            transition: transform 4s cubic-bezier(0.1, 1, 0.1, 1);
+        }
+        .case-item, .roulette-item {
+            width: 110px;
+            height: 110px;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .reel {
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3rem; background: rgba(255, 255, 255, 0.03);
+            border: 2px solid rgba(255, 112, 16, 0.3); border-radius: 1rem;
+            height: 100px; user-select: none;
+        }
+
+        .live-feed-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 0.75rem;
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+        }
+
+        /* Pixel Minecraft Dice Style */
+        .pixel-dice {
+            width: 72px;
+            height: 72px;
+            background: #d8d8d8;
+            border: 4px solid #000;
+            box-shadow: inset -4px -4px 0px #aaa, inset 4px 4px 0px #fff;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            padding: 6px;
+            gap: 2px;
+            image-rendering: pixelated;
+        }
+        .dot {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            border-radius: 1px;
+        }
+        .dot-red { background: #d32f2f; }
+        .dot-empty { background: transparent; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-orange-500 selection:text-white">
 
-    <!-- HEADER -->
-    <header class="border-b border-white/5 bg-[#0f0f13]/90 sticky top-0 z-40 backdrop-blur-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <div class="flex items-center gap-8">
-                <div>
-                    <a href="index.html" class="text-2xl font-black tracking-wider text-white flex items-center gap-1">
-                        HEL<span class="text-orange-500">BANK</span>
-                    </a>
-                    <span class="text-[9px] uppercase tracking-[0.2em] text-gray-500 block -mt-1 font-semibold">FINANCIAL SOLUTIONS</span>
-                </div>
-                <nav class="hidden md:flex items-center gap-6 text-xs font-bold uppercase tracking-wider">
-                    <a href="index.html" class="text-gray-400 hover:text-white transition-colors flex items-center gap-1">← БАНК</a>
-                    <a href="market.html" class="text-gray-400 hover:text-white transition-colors flex items-center gap-1">↗ БИРЖА НВК</a>
-                    <a href="casino.html" class="text-orange-400 flex items-center gap-1">★ КАЗИНО</a>
-                </nav>
-            </div>
+<body class="overflow-x-hidden">
 
-            <!-- USER / BALANCE CONTROLS -->
-            <div class="flex items-center gap-3" id="nav-auth-container">
-                <button onclick="openModal('modal-auth')" id="btn-login-trigger" class="btn-orange px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider">
-                    Войти в аккаунт
-                </button>
-                <div id="user-profile-bar" class="hidden flex items-center gap-3">
-                    <div class="bg-[#18181f] border border-white/10 rounded-xl px-3 py-1.5 flex items-center gap-3">
-                        <div class="text-right">
-                            <span class="text-[10px] text-gray-400 block uppercase tracking-wider font-semibold">Баланс</span>
-                            <span id="user-balance" class="text-sm font-extrabold text-orange-400">$0</span>
-                        </div>
-                        <button onclick="openModal('modal-deposit')" class="bg-orange-500/20 text-orange-400 hover:bg-orange-500 hover:text-white p-1.5 rounded-lg transition-colors text-xs font-bold">
-                            + Пополнить
-                        </button>
-                        <button onclick="openModal('modal-withdraw')" class="bg-white/5 text-gray-300 hover:bg-white/10 px-2 py-1.5 rounded-lg transition-colors text-xs font-bold">
-                            Вывод
-                        </button>
-                    </div>
-                    <div class="flex items-center gap-2 bg-[#18181f] border border-white/10 rounded-xl px-3 py-2">
-                        <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                        <span id="user-nickname" class="text-xs font-bold text-white">Игрок</span>
-                        <button onclick="logout()" class="text-gray-500 hover:text-red-400 ml-1 text-xs">✕</button>
-                    </div>
-                </div>
+    <!-- Лента последних дропов -->
+    <div class="w-full bg-black/60 border-b border-white/5 py-3 px-4 overflow-hidden">
+        <div class="max-w-7xl mx-auto flex items-center gap-3 overflow-x-auto no-scrollbar" id="live-feed">
+            <div class="live-feed-item"><span class="text-white/40">hheell_pro:</span> <span class="text-orange-400 font-bold">💎 $500,000</span></div>
+            <div class="live-feed-item"><span class="text-white/40">hheell_777:</span> <span class="text-yellow-400 font-bold">⚡ x10 Слоты</span></div>
+            <div class="live-feed-item"><span class="text-white/40">hheell_boss:</span> <span class="text-green-400 font-bold">👑 Case VIP</span></div>
+            <div class="live-feed-item"><span class="text-white/40">hheell_god:</span> <span class="text-purple-400 font-bold">🔥 $1,200,000</span></div>
+            <div class="live-feed-item"><span class="text-white/40">hheell_top:</span> <span class="text-blue-400 font-bold">💣 Мины x5.5</span></div>
+            <div class="live-feed-item"><span class="text-white/40">hheell_king:</span> <span class="text-orange-400 font-bold">🏆 Case Atlant</span></div>
+        </div>
+    </div>
+
+    <header class="w-full max-w-7xl px-4 sm:px-8 py-6 flex flex-col sm:flex-row justify-between items-center gap-6 sm:gap-0">
+        <div class="flex flex-col items-center sm:items-start text-center sm:text-left">
+            <a href="index.html" class="no-underline">
+                <h1 class="text-3xl font-header font-black tracking-tighter uppercase leading-none italic text-white">HelBank</h1>
+                <p class="text-[10px] uppercase tracking-[0.4em] text-white/20 mt-1 font-bold">Financial Solutions</p>
+            </a>
+            <div class="mt-4 flex gap-4 text-[10px] uppercase tracking-[.2em] font-header font-bold">
+                <a href="index.html" class="text-white/50 hover:text-orange-400 transition-colors">← Главная</a>
+                <a href="market.html" class="text-white/50 hover:text-orange-400 transition-colors">↗ Биржа HBK</a>
             </div>
         </div>
+
+        <a href="https://discord.com/invite/atlantworld" target="_blank" class="flex items-center gap-4 no-underline scale-90 sm:scale-100">
+            <div class="text-right flex flex-col justify-center">
+                <span class="text-[#ff7010] font-header font-black text-base uppercase leading-none">AtlantWorld</span>
+                <span class="text-white/30 text-[9px] uppercase tracking-[0.1em] font-bold">RolePlay Project</span>
+            </div>
+            <img src="https://atlantworld.com/images/atlantworld-logo-onl.png" alt="AtlantWorld" class="h-12 w-auto">
+        </a>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1">
-        <!-- BANNER -->
-        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-orange-950/40 via-[#16161c] to-[#121217] border border-orange-500/20 p-6 sm:p-10 mb-8">
-            <div class="relative z-10 max-w-2xl">
-                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-[10px] font-bold uppercase tracking-widest mb-4">
-                    <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span> MINECRAFT ATLANTWORLD • АВТОПОПОЛНЕНИЕ 24/7
-                </span>
-                <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
-                    КАЗИНО <span class="text-orange-500">HELBANK</span>
-                </h1>
-                <p class="text-gray-400 text-xs sm:text-sm mb-6 leading-relaxed">
-                    Играй на игровые доллары Minecraft. Перевод денег в игре через команду <code class="bg-black/50 text-orange-400 px-1.5 py-0.5 rounded border border-white/10">/bank pay</code> на наш сервер, и баланс на сайте пополнится автоматически за 1 секунду.
-                </p>
-                <div class="flex flex-wrap gap-4">
-                    <button onclick="switchTab('slots')" class="btn-orange px-6 py-3 rounded-xl text-xs uppercase tracking-wider flex items-center gap-2">
-                        ▶ Играть в Слоты
-                    </button>
-                    <button onclick="openModal('modal-deposit')" class="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">
-                        Как пополнить?
-                    </button>
-                </div>
-            </div>
+    <main class="w-full px-4 sm:px-6 flex-1 flex flex-col items-center justify-center max-w-7xl py-6">
+
+        <div class="mb-6 text-center max-w-xl">
+            <span class="text-orange-400 font-header font-bold text-[10px] uppercase tracking-[0.3em] mb-1 block">HelBank Arena</span>
+            <h2 class="text-3xl sm:text-5xl font-header font-black italic text-white uppercase">Игровой <span class="orange-gradient">Клуб</span></h2>
         </div>
 
-        <!-- GAME CATEGORIES TABS -->
-        <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar">
-            <button onclick="switchTab('slots')" id="tab-slots" class="tab-btn active bg-orange-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs whitespace-nowrap transition-all">Слоты 3x3</button>
-            <button onclick="switchTab('crash')" id="tab-crash" class="tab-btn bg-[#18181f] hover:bg-[#22222b] text-gray-400 font-bold px-5 py-2.5 rounded-xl text-xs whitespace-nowrap transition-all">Краш (Crash)</button>
-            <button onclick="switchTab('coinflip')" id="tab-coinflip" class="tab-btn bg-[#18181f] hover:bg-[#22222b] text-gray-400 font-bold px-5 py-2.5 rounded-xl text-xs whitespace-nowrap transition-all">CoinFlip (Орёл/Решка)</button>
-            <button onclick="switchTab('dice')" id="tab-dice" class="tab-btn bg-[#18181f] hover:bg-[#22222b] text-gray-400 font-bold px-5 py-2.5 rounded-xl text-xs whitespace-nowrap transition-all">Кости (Dice)</button>
-            <button onclick="switchTab('wheel')" id="tab-wheel" class="tab-btn bg-[#18181f] hover:bg-[#22222b] text-gray-400 font-bold px-5 py-2.5 rounded-xl text-xs whitespace-nowrap transition-all">Колесо Фортуны</button>
-            <button onclick="switchTab('roulette')" id="tab-roulette" class="tab-btn bg-[#18181f] hover:bg-[#22222b] text-gray-400 font-bold px-5 py-2.5 rounded-xl text-xs whitespace-nowrap transition-all">Рулетка</button>
-        </div>
+        <section class="glass rounded-[2rem] p-6 sm:p-8 w-full max-w-5xl relative overflow-hidden">
 
-        <!-- GAME BOARDS CONTAINER -->
-        <div class="glass-panel rounded-3xl p-6 sm:p-8 min-h-[450px] relative">
+            <!-- Навигация -->
+            <div class="flex flex-wrap justify-center gap-2 mb-8 bg-black/40 p-2 rounded-2xl border border-white/5">
+                <button onclick="switchGame('cases')" id="btn-game-cases" class="tab-game active px-4 py-2.5 rounded-xl font-header font-bold text-xs uppercase">📦 Кейсы</button>
+                <button onclick="switchGame('slots')" id="btn-game-slots" class="tab-game px-4 py-2.5 rounded-xl font-header font-bold text-xs uppercase text-white/50">🎰 Слоты</button>
+                <button onclick="switchGame('mines')" id="btn-game-mines" class="tab-game px-4 py-2.5 rounded-xl font-header font-bold text-xs uppercase text-white/50">💣 Мины</button>
+                <button onclick="switchGame('wheel')" id="btn-game-wheel" class="tab-game px-4 py-2.5 rounded-xl font-header font-bold text-xs uppercase text-white/50">🎡 Колесо</button>
+                <button onclick="switchGame('crash')" id="btn-game-crash" class="tab-game px-4 py-2.5 rounded-xl font-header font-bold text-xs uppercase text-white/50">📈 Краш</button>
+                <button onclick="switchGame('coinflip')" id="btn-game-coinflip" class="tab-game px-4 py-2.5 rounded-xl font-header font-bold text-xs uppercase text-white/50">🪙 Монетка</button>
+                <button onclick="switchGame('dice')" id="btn-game-dice" class="tab-game px-4 py-2.5 rounded-xl font-header font-bold text-xs uppercase text-white/50">🎲 Кости</button>
+                <button onclick="switchGame('roulette')" id="btn-game-roulette" class="tab-game px-4 py-2.5 rounded-xl font-header font-bold text-xs uppercase text-white/50">🔴 Рулетка</button>
+            </div>
 
-            <!-- 1. SLOTS GAME -->
-            <div id="game-slots" class="game-view space-y-6">
-                <div class="flex justify-between items-center border-b border-white/5 pb-4">
-                    <div>
-                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold block">Игровой автомат</span>
-                        <h2 class="text-xl font-black text-white">HELBANK CLASSIC</h2>
-                    </div>
-                    <span class="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-3 py-1 rounded-full text-xs font-bold">⚡ JACKPOT 100x</span>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-                    <!-- Controls -->
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">Ставка ($)</label>
-                            <input type="number" id="slots-bet" value="100" min="10" class="w-full bg-[#121217] border border-white/10 rounded-xl px-4 py-3 text-white font-bold text-sm focus:outline-none focus:border-orange-500">
-                        </div>
-                        <div class="grid grid-cols-5 gap-2">
-                            <button onclick="setBet('slots-bet', 50)" class="bg-white/5 hover:bg-white/10 py-1.5 rounded-lg text-xs font-bold text-gray-300">50</button>
-                            <button onclick="setBet('slots-bet', 100)" class="bg-white/5 hover:bg-white/10 py-1.5 rounded-lg text-xs font-bold text-gray-300">100</button>
-                            <button onclick="setBet('slots-bet', 500)" class="bg-white/5 hover:bg-white/10 py-1.5 rounded-lg text-xs font-bold text-gray-300">500</button>
-                            <button onclick="setBet('slots-bet', 1000)" class="bg-white/5 hover:bg-white/10 py-1.5 rounded-lg text-xs font-bold text-gray-300">1K</button>
-                            <button onclick="doubleBet('slots-bet')" class="bg-white/5 hover:bg-white/10 py-1.5 rounded-lg text-xs font-bold text-gray-300">2X</button>
-                        </div>
-                        <button onclick="spinSlots()" id="btn-spin-slots" class="w-full btn-orange py-4 rounded-xl text-sm uppercase tracking-wider font-black flex items-center justify-center gap-2">
-                            🎰 Крутить барабаны
+            <!-- Игровое Поле -->
+            <div id="game-display" class="bg-black/50 rounded-2xl p-6 border border-white/5 mb-6 text-center min-h-[260px] flex flex-col items-center justify-center relative">
+                
+                <!-- 1. Кейсы -->
+                <div id="display-cases" class="w-full">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6" id="case-selector">
+                        <button onclick="selectCase(5000, 'Новичок')" class="p-3 bg-white/5 border border-orange-500/30 rounded-xl hover:border-orange-500 transition text-left">
+                            <div class="text-2xl">📦</div>
+                            <div class="font-header font-bold text-xs text-white mt-1">Новичок</div>
+                            <div class="text-orange-400 font-bold text-xs">$5,000</div>
+                        </button>
+                        <button onclick="selectCase(25000, 'HelBank Standard')" class="p-3 bg-white/5 border border-orange-500/30 rounded-xl hover:border-orange-500 transition text-left">
+                            <div class="text-2xl">💼</div>
+                            <div class="font-header font-bold text-xs text-white mt-1">HelBank VIP</div>
+                            <div class="text-orange-400 font-bold text-xs">$25,000</div>
+                        </button>
+                        <button onclick="selectCase(100000, 'Atlant Elite')" class="p-3 bg-white/5 border border-purple-500/30 rounded-xl hover:border-purple-500 transition text-left">
+                            <div class="text-2xl">👑</div>
+                            <div class="font-header font-bold text-xs text-purple-400 mt-1">Atlant Elite</div>
+                            <div class="text-purple-400 font-bold text-xs">$100,000</div>
+                        </button>
+                        <button onclick="selectCase(500000, 'Secret Boss')" class="p-3 bg-white/5 border border-yellow-500/30 rounded-xl hover:border-yellow-500 transition text-left">
+                            <div class="text-2xl">🔥</div>
+                            <div class="font-header font-bold text-xs text-yellow-400 mt-1">Secret Boss</div>
+                            <div class="text-yellow-400 font-bold text-xs">$500,000</div>
                         </button>
                     </div>
 
-                    <!-- Slots Display -->
-                    <div class="md:col-span-2 bg-[#101014] border border-white/10 rounded-2xl p-6 flex flex-col items-center justify-center">
-                        <div class="flex gap-4 mb-6">
-                            <div id="slot-1" class="w-24 h-28 sm:w-32 sm:h-36 bg-[#181820] border border-white/10 rounded-2xl flex items-center justify-center text-4xl sm:text-6xl shadow-inner">💎</div>
-                            <div id="slot-2" class="w-24 h-28 sm:w-32 sm:h-36 bg-[#181820] border border-white/10 rounded-2xl flex items-center justify-center text-4xl sm:text-6xl shadow-inner">👑</div>
-                            <div id="slot-3" class="w-24 h-28 sm:w-32 sm:h-36 bg-[#181820] border border-white/10 rounded-2xl flex items-center justify-center text-4xl sm:text-6xl shadow-inner">💎</div>
+                    <div class="case-roulette-wrapper">
+                        <div class="case-tape" id="case-tape"></div>
+                    </div>
+                </div>
+
+                <!-- 2. Слоты -->
+                <div id="display-slots" class="hidden w-full max-w-md">
+                    <div class="grid grid-cols-3 gap-3 mb-2">
+                        <div id="reel-1" class="reel">💎</div>
+                        <div id="reel-2" class="reel">🍋</div>
+                        <div id="reel-3" class="reel">7️⃣</div>
+                    </div>
+                </div>
+
+                <!-- 3. Мины -->
+                <div id="display-mines" class="hidden flex-col items-center">
+                    <div class="grid grid-cols-4 gap-2 w-48 mb-2" id="mines-grid"></div>
+                </div>
+
+                <!-- 4. Колесо Фортуны CaseBattle -->
+                <div id="display-wheel" class="hidden flex-col items-center w-full max-w-md">
+                    <div class="text-xs font-header font-bold text-white/50 uppercase mb-3">Выберите риск и множитель:</div>
+                    <div class="grid grid-cols-4 gap-2 w-full mb-4">
+                        <button onclick="setWheelMultiplier(2, 50)" id="wheel-m-2" class="p-3 bg-orange-500 text-white font-header font-bold rounded-xl border border-orange-500">x2<br><span class="text-[9px] opacity-80">50%</span></button>
+                        <button onclick="setWheelMultiplier(3, 30)" id="wheel-m-3" class="p-3 bg-white/5 text-white/60 font-header font-bold rounded-xl border border-white/10">x3<br><span class="text-[9px] opacity-80">30%</span></button>
+                        <button onclick="setWheelMultiplier(5, 18)" id="wheel-m-5" class="p-3 bg-white/5 text-white/60 font-header font-bold rounded-xl border border-white/10">x5<br><span class="text-[9px] opacity-80">18%</span></button>
+                        <button onclick="setWheelMultiplier(10, 10)" id="wheel-m-10" class="p-3 bg-white/5 text-white/60 font-header font-bold rounded-xl border border-white/10">x10<br><span class="text-[9px] opacity-80">10%</span></button>
+                    </div>
+                    <div id="wheel-disc" class="w-28 h-28 rounded-full border-4 border-orange-500 flex items-center justify-center text-3xl font-black font-header text-orange-400 transition-all duration-700">
+                        x2
+                    </div>
+                </div>
+
+                <!-- 5. Краш -->
+                <div id="display-crash" class="hidden flex-col items-center">
+                    <div id="crash-multiplier" class="text-6xl font-header font-black text-green-400 italic">1.00x</div>
+                    <p class="text-white/30 text-[10px] font-header uppercase tracking-widest mt-2">Каждый прокрут рассчитывается автоматически</p>
+                </div>
+
+                <!-- 6. CoinFlip -->
+                <div id="display-coinflip" class="hidden flex-col items-center">
+                    <div id="coin" class="w-20 h-20 rounded-full bg-gradient-to-tr from-amber-600 to-yellow-400 border-4 border-yellow-200 flex items-center justify-center text-3xl shadow-[0_0_20px_rgba(255,180,0,0.4)] mb-4">👑</div>
+                    <div class="flex gap-3">
+                        <button id="choice-heads" onclick="setCoinChoice('heads')" class="px-6 py-2 rounded-xl border border-orange-500 bg-orange-500 text-white text-xs font-header font-bold uppercase">Орёл (30%)</button>
+                        <button id="choice-tails" onclick="setCoinChoice('tails')" class="px-6 py-2 rounded-xl border border-white/10 bg-white/5 text-white/50 text-xs font-header font-bold uppercase">Решка (30%)</button>
+                    </div>
+                </div>
+
+                <!-- 7. Кости (2 кубика) -->
+                <div id="display-dice" class="hidden flex-col items-center">
+                    <div class="flex gap-4 mb-4">
+                        <div id="dice-1" class="pixel-dice"></div>
+                        <div id="dice-2" class="pixel-dice"></div>
+                    </div>
+                    <div class="text-xs font-header font-bold text-white/60 mb-2">Сумма выпавших кубиков:</div>
+                    <div class="flex gap-3">
+                        <button id="choice-under" onclick="setDiceChoice('under')" class="px-6 py-2 rounded-xl border border-orange-500 bg-orange-500 text-white text-xs font-header font-bold uppercase">&lt; 6 (x2)</button>
+                        <button id="choice-over" onclick="setDiceChoice('over')" class="px-6 py-2 rounded-xl border border-white/10 bg-white/5 text-white/50 text-xs font-header font-bold uppercase">&gt; 6 (x2)</button>
+                    </div>
+                </div>
+
+                <!-- 8. Рулетка -->
+                <div id="display-roulette" class="hidden w-full">
+                    <div class="flex justify-center gap-3 mb-4">
+                        <button onclick="setRouletteBet('red')" id="r-btn-red" class="px-4 py-2 bg-red-600 text-white font-header font-bold text-xs rounded-xl border-2 border-red-500">КРАСНОЕ (x2)</button>
+                        <button onclick="setRouletteBet('green')" id="r-btn-green" class="px-4 py-2 bg-green-600 text-white font-header font-bold text-xs rounded-xl border-2 border-transparent opacity-60">0 ЗЕЛЕНОЕ (x14)</button>
+                        <button onclick="setRouletteBet('black')" id="r-btn-black" class="px-4 py-2 bg-zinc-800 text-white font-header font-bold text-xs rounded-xl border-2 border-transparent opacity-60">ЧЕРНОЕ (x2)</button>
+                    </div>
+                    <div class="case-roulette-wrapper">
+                        <div class="roulette-tape" id="roulette-tape"></div>
+                    </div>
+                </div>
+
+                <!-- Статус -->
+                <div id="game-status" class="mt-4 text-xs font-header font-bold text-orange-400">Выберите игру и сделайте ставку</div>
+            </div>
+
+            <!-- Панель Ставки и Форма -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-white/30 text-[9px] uppercase tracking-widest mb-1 font-bold font-header">Игровой Никнейм</label>
+                        <input type="text" id="nickname" value="hheell" oninput="this.value=this.value.replace(/[^a-zA-Z0-9_]/g,'')" class="input-field rounded-xl px-4 py-2.5 font-bold text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-white/30 text-[9px] uppercase tracking-widest mb-1 font-bold font-header">Discord ID</label>
+                        <input type="text" id="discord" placeholder="ID аккаунта" class="input-field rounded-xl px-4 py-2.5 font-bold text-sm">
+                    </div>
+                </div>
+
+                <div class="space-y-3 flex flex-col justify-between">
+                    <div>
+                        <label class="block text-white/30 text-[9px] uppercase tracking-widest mb-1 font-bold font-header">Сумма ставки ($)</label>
+                        <input type="number" id="bet-amount" value="10000" min="1000" oninput="updatePotentialWin()" class="input-field rounded-xl px-4 py-2.5 text-lg font-black">
+                        
+                        <!-- Быстрые кнопки ставок -->
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            <button onclick="setBet(1000)" class="px-2.5 py-1 bg-white/5 hover:bg-orange-500/20 border border-white/10 rounded-lg text-[10px] font-header font-bold text-white/70">1,000</button>
+                            <button onclick="setBet(10000)" class="px-2.5 py-1 bg-white/5 hover:bg-orange-500/20 border border-white/10 rounded-lg text-[10px] font-header font-bold text-white/70">10,000</button>
+                            <button onclick="setBet(100000)" class="px-2.5 py-1 bg-white/5 hover:bg-orange-500/20 border border-white/10 rounded-lg text-[10px] font-header font-bold text-white/70">100,000</button>
+                            <button onclick="setBet(1000000)" class="px-2.5 py-1 bg-white/5 hover:bg-orange-500/20 border border-white/10 rounded-lg text-[10px] font-header font-bold text-white/70">1,000,000 (1кк)</button>
+                            <button onclick="setBet(10000000)" class="px-2.5 py-1 bg-white/5 hover:bg-orange-500/20 border border-white/10 rounded-lg text-[10px] font-header font-bold text-white/70">10,000,000 (10кк)</button>
                         </div>
-                        <div id="slots-result" class="text-xs font-bold text-gray-400 min-h-[20px] text-center">Сделайте ставку и нажмите «Крутить»</div>
+                    </div>
+                    <div class="p-3 bg-white/5 rounded-xl border border-white/5 flex justify-between items-center">
+                        <span class="text-white/30 text-[10px] font-header font-bold uppercase">Расчетный выигрыш:</span>
+                        <span id="potential-win" class="text-green-400 font-header font-black text-sm">$20 000</span>
                     </div>
                 </div>
             </div>
 
-            <!-- 2. CRASH GAME -->
-            <div id="game-crash" class="game-view space-y-6 hidden">
-                <div class="flex justify-between items-center border-b border-white/5 pb-4">
-                    <div>
-                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold block">Растущий график</span>
-                        <h2 class="text-xl font-black text-white">CRASH ROCKET</h2>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">Ставка ($)</label>
-                            <input type="number" id="crash-bet" value="100" min="10" class="w-full bg-[#121217] border border-white/10 rounded-xl px-4 py-3 text-white font-bold text-sm focus:outline-none focus:border-orange-500">
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">Авто-вывод (X, опционально)</label>
-                            <input type="number" id="crash-auto" value="2.00" step="0.1" min="1.1" class="w-full bg-[#121217] border border-white/10 rounded-xl px-4 py-3 text-white font-bold text-sm focus:outline-none focus:border-orange-500">
-                        </div>
-                        <button onclick="handleCrashBtn()" id="btn-crash-action" class="w-full btn-orange py-4 rounded-xl text-sm uppercase tracking-wider font-black">
-                            🚀 Запустить ракету
-                        </button>
-                    </div>
-
-                    <div class="md:col-span-2 bg-[#101014] border border-white/10 rounded-2xl h-64 flex flex-col items-center justify-center relative overflow-hidden">
-                        <div id="crash-multiplier" class="text-5xl sm:text-7xl font-black text-white tracking-wider">1.00x</div>
-                        <div id="crash-status" class="text-xs font-bold text-gray-500 uppercase tracking-widest mt-2">Ракета на старте</div>
-                    </div>
-                </div>
+            <!-- Капча и Старт -->
+            <div class="mt-6 pt-4 border-t border-white/5 flex flex-col items-center gap-4">
+                <div class="cf-turnstile" data-sitekey="0x4AAAAAADZWUMVmo_9A6_Ye" data-theme="dark" data-size="flexible"></div>
+                <button id="play-btn" onclick="playGame()" class="btn-atlant w-full py-4 rounded-xl text-xs tracking-widest">ИГРАТЬ / ОТКРЫТЬ</button>
             </div>
-
-            <!-- 3. COINFLIP GAME -->
-            <div id="game-coinflip" class="game-view space-y-6 hidden">
-                <div class="flex justify-between items-center border-b border-white/5 pb-4">
-                    <div>
-                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold block">50 / 50 Шанс</span>
-                        <h2 class="text-xl font-black text-white">COINFLIP</h2>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">Ставка ($)</label>
-                            <input type="number" id="coin-bet" value="100" min="10" class="w-full bg-[#121217] border border-white/10 rounded-xl px-4 py-3 text-white font-bold text-sm focus:outline-none focus:border-orange-500">
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">Твой выбор</label>
-                            <div class="grid grid-cols-2 gap-3">
-                                <button onclick="selectCoinSide('heads')" id="side-heads" class="bg-orange-500 text-white py-3 rounded-xl font-bold text-xs border border-orange-400">Орёл</button>
-                                <button onclick="selectCoinSide('tails')" id="side-tails" class="bg-white/5 text-gray-400 py-3 rounded-xl font-bold text-xs border border-white/5">Решка</button>
-                            </div>
-                        </div>
-                        <button onclick="playCoinflip()" id="btn-coinflip" class="w-full btn-orange py-4 rounded-xl text-sm uppercase tracking-wider font-black">
-                            🪙 Бросить монету
-                        </button>
-                    </div>
-
-                    <div class="md:col-span-2 bg-[#101014] border border-white/10 rounded-2xl h-64 flex flex-col items-center justify-center">
-                        <div id="coin-element" class="w-28 h-28 rounded-full bg-gradient-to-tr from-yellow-600 via-amber-400 to-yellow-200 border-4 border-yellow-300 shadow-2xl flex items-center justify-center text-3xl font-black text-yellow-950 mb-4">
-                            👑
-                        </div>
-                        <div id="coin-result" class="text-xs font-bold text-gray-400">Сделай выбор и брось монету</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 4. DICE GAME -->
-            <div id="game-dice" class="game-view space-y-6 hidden">
-                <div class="flex justify-between items-center border-b border-white/5 pb-4">
-                    <div>
-                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold block">Настройка шанса</span>
-                        <h2 class="text-xl font-black text-white">DICE ROLLER</h2>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">Ставка ($)</label>
-                            <input type="number" id="dice-bet" value="100" min="10" class="w-full bg-[#121217] border border-white/10 rounded-xl px-4 py-3 text-white font-bold text-sm focus:outline-none focus:border-orange-500">
-                        </div>
-                        <div>
-                            <div class="flex justify-between text-xs font-bold text-gray-400 mb-2">
-                                <span>Шанс победы: <b id="dice-chance-val" class="text-orange-400">50%</b></span>
-                                <span>Множитель: <b id="dice-mult-val" class="text-orange-400">x1.96</b></span>
-                            </div>
-                            <input type="range" id="dice-slider" min="5" max="95" value="50" oninput="updateDiceCalculations()" class="w-full accent-orange-500">
-                        </div>
-                        <button onclick="playDice()" class="w-full btn-orange py-4 rounded-xl text-sm uppercase tracking-wider font-black">
-                            🎲 Бросить кости
-                        </button>
-                    </div>
-
-                    <div class="md:col-span-2 bg-[#101014] border border-white/10 rounded-2xl h-64 flex flex-col items-center justify-center">
-                        <span class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-2">Результат броска (0.00 - 100.00)</span>
-                        <div id="dice-result-num" class="text-6xl font-black text-white mb-2">50.00</div>
-                        <div id="dice-status" class="text-xs font-bold text-gray-400">Задайте шанс и сделайте бросок</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 5. WHEEL GAME -->
-            <div id="game-wheel" class="game-view space-y-6 hidden">
-                <div class="flex justify-between items-center border-b border-white/5 pb-4">
-                    <div>
-                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold block">Колесо фортуны</span>
-                        <h2 class="text-xl font-black text-white">LUCKY WHEEL</h2>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">Ставка ($)</label>
-                            <input type="number" id="wheel-bet" value="100" min="10" class="w-full bg-[#121217] border border-white/10 rounded-xl px-4 py-3 text-white font-bold text-sm focus:outline-none focus:border-orange-500">
-                        </div>
-                        <button onclick="spinWheel()" id="btn-spin-wheel" class="w-full btn-orange py-4 rounded-xl text-sm uppercase tracking-wider font-black">
-                            🎡 Вращать колесо
-                        </button>
-                    </div>
-
-                    <div class="md:col-span-2 bg-[#101014] border border-white/10 rounded-2xl p-6 flex flex-col items-center justify-center relative">
-                        <div class="w-3 h-6 bg-orange-500 rounded-b-full absolute top-4 z-10 shadow-lg"></div>
-                        <div id="wheel-canvas-container" class="w-56 h-56 rounded-full border-4 border-white/10 flex items-center justify-center relative overflow-hidden transition-all duration-[4s] cubic-bezier(0.15,0.9,0.2,1)">
-                            <div class="w-full h-full rounded-full bg-gradient-to-tr from-orange-600 via-amber-500 to-yellow-400 flex items-center justify-center text-white font-black text-2xl">
-                                HELBANK
-                            </div>
-                        </div>
-                        <div id="wheel-result" class="text-xs font-bold text-gray-400 mt-4">Нажмите «Вращать колесо»</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 6. ROULETTE GAME -->
-            <div id="game-roulette" class="game-view space-y-6 hidden">
-                <div class="flex justify-between items-center border-b border-white/5 pb-4">
-                    <div>
-                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-bold block">Европейская рулетка</span>
-                        <h2 class="text-xl font-black text-white">EUROPEAN ROULETTE</h2>
-                    </div>
-                </div>
-
-                <div class="space-y-6">
-                    <!-- Bet Selector -->
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <button onclick="setRouletteChoice('red')" id="roul-red" class="bg-red-600/30 border border-red-500/40 text-red-300 p-3 rounded-xl font-bold text-xs">Красное (x2)</button>
-                        <button onclick="setRouletteChoice('black')" id="roul-black" class="bg-gray-800 border border-gray-600 text-gray-200 p-3 rounded-xl font-bold text-xs">Чёрное (x2)</button>
-                        <button onclick="setRouletteChoice('even')" id="roul-even" class="bg-white/5 border border-white/10 text-gray-300 p-3 rounded-xl font-bold text-xs">Чётное (x2)</button>
-                        <button onclick="setRouletteChoice('odd')" id="roul-odd" class="bg-white/5 border border-white/10 text-gray-300 p-3 rounded-xl font-bold text-xs">Нечётное (x2)</button>
-                    </div>
-
-                    <div class="flex gap-4 items-center">
-                        <input type="number" id="roulette-bet" value="100" min="10" class="flex-1 bg-[#121217] border border-white/10 rounded-xl px-4 py-3 text-white font-bold text-sm focus:outline-none focus:border-orange-500">
-                        <button onclick="spinRoulette()" class="btn-orange px-8 py-3.5 rounded-xl text-xs uppercase tracking-wider font-black">
-                            Крутить рулетку
-                        </button>
-                    </div>
-
-                    <div class="bg-[#101014] border border-white/10 rounded-2xl p-6 text-center">
-                        <div id="roulette-display" class="text-4xl font-black text-white mb-2">0</div>
-                        <div id="roulette-result" class="text-xs font-bold text-gray-400">Выберите тип ставки и запустите рулетку</div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
+        </section>
     </main>
 
-    <!-- MODAL 1: AUTHENTICATION -->
-    <div id="modal-auth" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-[#16161c] border border-white/10 rounded-3xl max-w-md w-full p-6 sm:p-8 relative shadow-2xl">
-            <button onclick="closeModal('modal-auth')" class="absolute top-6 right-6 text-gray-500 hover:text-white">✕</button>
-            <h3 class="text-2xl font-black text-white mb-1">ВХОД В КАЗИНО</h3>
-            <p class="text-xs text-gray-400 mb-6">Укажите ваш игровой никнейм в Minecraft для автопополнений и вывода.</p>
-            
-            <form onsubmit="handleLogin(event)" class="space-y-4">
-                <div>
-                    <label class="text-xs font-bold text-gray-400 block mb-1">Никнейм в Minecraft *</label>
-                    <input type="text" id="input-nick" required placeholder="Например: Nikita_Dolgov" class="w-full bg-[#0f0f13] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-orange-500">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-gray-400 block mb-1">Пароль</label>
-                    <input type="password" required value="******" class="w-full bg-[#0f0f13] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-orange-500">
-                </div>
-                <button type="submit" class="w-full btn-orange py-3.5 rounded-xl text-xs font-extrabold uppercase tracking-wider mt-2">
-                    Войти
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 2: DEPOSIT -->
-    <div id="modal-deposit" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-[#16161c] border border-white/10 rounded-3xl max-w-md w-full p-6 sm:p-8 relative shadow-2xl">
-            <button onclick="closeModal('modal-deposit')" class="absolute top-6 right-6 text-gray-500 hover:text-white">✕</button>
-            <div class="flex items-center gap-2 mb-2">
-                <span class="w-2 h-2 rounded-full bg-green-500"></span>
-                <span class="text-[10px] font-bold text-green-400 uppercase tracking-widest">БОТ ОНЛАЙН 24/7</span>
-            </div>
-            <h3 class="text-xl font-black text-white mb-2">ПОПОЛНЕНИЕ БАЛАНСА</h3>
-            <p class="text-xs text-gray-400 mb-6 leading-relaxed"> Переведите деньги боту в игре, и баланс на сайте обновится автоматически за 1 секунду.</p>
-
-            <div class="bg-[#0f0f13] border border-white/10 rounded-xl p-4 mb-6">
-                <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider block mb-1">Команда для перевода в Minecraft:</span>
-                <div class="flex items-center justify-between bg-black/40 px-3 py-2 rounded-lg border border-white/5">
-                    <code id="cmd-copy" class="text-xs font-bold text-orange-400">/bank pay oukouk 1000</code>
-                    <button onclick="copyCommand()" class="bg-orange-500/20 text-orange-400 hover:bg-orange-500 hover:text-white px-3 py-1 rounded text-xs font-bold transition-colors">
-                        Копировать
-                    </button>
-                </div>
-            </div>
-
-            <button onclick="closeModal('modal-deposit')" class="w-full bg-white/5 hover:bg-white/10 text-white py-3 rounded-xl text-xs font-bold uppercase tracking-wider border border-white/10">
-                Понятно, закрыть
-            </button>
-        </div>
-    </div>
-
-    <!-- MODAL 3: WITHDRAW -->
-    <div id="modal-withdraw" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-[#16161c] border border-white/10 rounded-3xl max-w-md w-full p-6 sm:p-8 relative shadow-2xl">
-            <button onclick="closeModal('modal-withdraw')" class="absolute top-6 right-6 text-gray-500 hover:text-white">✕</button>
-            <h3 class="text-xl font-black text-white mb-2">ВЫВОД В MINECRAFT</h3>
-            <p class="text-xs text-gray-400 mb-6">Бот переведёт деньги на твой игровой аккаунт через команду /bank pay.</p>
-
-            <form onsubmit="handleWithdraw(event)" class="space-y-4">
-                <div>
-                    <label class="text-xs font-bold text-gray-400 block mb-1">Сумма вывода ($)</label>
-                    <input type="number" id="withdraw-amount" required min="100" placeholder="1000" class="w-full bg-[#0f0f13] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-orange-500">
-                </div>
-                <button type="submit" class="w-full btn-orange py-3.5 rounded-xl text-xs font-extrabold uppercase tracking-wider">
-                    Подтвердить вывод
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- FOOTER -->
-    <footer class="border-t border-white/5 py-6 text-center text-xs text-gray-600 font-semibold">
-        © 2026 HELBANK CASINO • ATLANTWORLD ROLEPLAY
+    <footer class="w-full max-w-5xl px-8 py-6 text-center border-t border-white/5 mt-8">
+        <p class="text-white/30 text-[10px] font-header font-bold uppercase tracking-widest">© 2026 HelBank Casino. Играйте ответственно.</p>
     </footer>
 
-    <!-- JS LOGIC -->
     <script>
-        // WEB AUDIO SYNTHESIZER FOR SOUND EFFECTS
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playAudioSound(type) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
+        const WORKER_URL = "https://late-heart-8807.sosaso1234567890.workers.dev";
+        let currentGame = 'cases';
+        let selectedCasePrice = 25000;
+        let selectedCaseName = 'HelBank VIP';
+        let coinChoice = 'heads';
+        let diceChoice = 'under';
+        let wheelMult = 2;
+        let wheelChance = 50;
+        let rouletteChoice = 'red';
 
-            if (type === 'click') {
-                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
-            } else if (type === 'win') {
-                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-            } else if (type === 'loss') {
-                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
-                osc.frequency.setValueAtTime(150, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+        const caseItemsList = [
+            { name: '$1,000', icon: '💵', color: '#888' },
+            { name: '$10,000', icon: '💰', color: '#3b82f6' },
+            { name: '$50,000', icon: '💎', color: '#a855f7' },
+            { name: '$250,000', icon: '👑', color: '#eab308' },
+            { name: '$1,000,000', icon: '🔥', color: '#ef4444' }
+        ];
+
+        // Pixel dice rendering logic (Minecraft 1-6 style)
+        function renderDicePixel(elementId, value) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            
+            // Map 1..6 dot positions
+            const dotsMap = {
+                1: [4], // center dot red
+                2: [0, 8],
+                3: [0, 4, 8],
+                4: [0, 2, 6, 8],
+                5: [0, 2, 4, 6, 8],
+                6: [0, 2, 3, 5, 6, 8]
+            };
+
+            let html = '';
+            const activeDots = dotsMap[value] || [];
+
+            for (let i = 0; i < 9; i++) {
+                if (activeDots.includes(i)) {
+                    if (value === 1) html += '<div class="dot dot-red"></div>';
+                    else html += '<div class="dot"></div>';
+                } else {
+                    html += '<div class="dot-empty"></div>';
+                }
+            }
+            el.innerHTML = html;
+        }
+
+        renderDicePixel('dice-1', 3);
+        renderDicePixel('dice-2', 4);
+
+        function setBet(amount) {
+            document.getElementById('bet-amount').value = amount;
+            updatePotentialWin();
+        }
+
+        function initMines() {
+            const grid = document.getElementById('mines-grid');
+            grid.innerHTML = '';
+            for(let i=0; i<16; i++) {
+                grid.innerHTML += `<button onclick="this.innerText='💎'" class="h-10 bg-white/10 hover:bg-orange-500/30 rounded font-bold">?</button>`;
             }
         }
+        initMines();
 
-        // STATE & PERSISTENCE
-        let state = {
-            user: localStorage.getItem('hel_user') || null,
-            balance: parseInt(localStorage.getItem('hel_balance')) || 10000,
-            selectedCoinSide: 'heads',
-            rouletteChoice: 'red'
-        };
-
-        function saveState() {
-            if (state.user) localStorage.setItem('hel_user', state.user);
-            else localStorage.removeItem('hel_user');
-            localStorage.setItem('hel_balance', state.balance);
-            updateUI();
-        }
-
-        function updateUI() {
-            const authContainer = document.getElementById('nav-auth-container');
-            const loginBtn = document.getElementById('btn-login-trigger');
-            const profileBar = document.getElementById('user-profile-bar');
-
-            if (state.user) {
-                loginBtn.classList.add('hidden');
-                profileBar.classList.remove('hidden');
-                document.getElementById('user-nickname').innerText = state.user;
-                document.getElementById('user-balance').innerText = '$' + state.balance.toLocaleString();
-            } else {
-                loginBtn.classList.remove('hidden');
-                profileBar.classList.add('hidden');
+        function initCaseTape() {
+            const tape = document.getElementById('case-tape');
+            tape.innerHTML = '';
+            for(let i=0; i<30; i++) {
+                const item = caseItemsList[Math.floor(Math.random()*caseItemsList.length)];
+                tape.innerHTML += `
+                    <div class="case-item" style="border-color:${item.color}">
+                        <span class="text-3xl">${item.icon}</span>
+                        <span class="text-[10px] font-header font-bold text-white mt-1">${item.name}</span>
+                    </div>
+                `;
             }
         }
+        initCaseTape();
 
-        // MODALS & NAVIGATION
-        function openModal(id) {
-            playAudioSound('click');
-            document.getElementById(id).classList.remove('hidden');
+        function initRouletteTape() {
+            const tape = document.getElementById('roulette-tape');
+            if(!tape) return;
+            tape.innerHTML = '';
+            const colors = ['red', 'black', 'red', 'black', 'green', 'red', 'black'];
+            for(let i=0; i<35; i++) {
+                const num = Math.floor(Math.random() * 36);
+                const col = num === 0 ? 'green' : (i % 2 === 0 ? 'red' : 'black');
+                const bg = col === 'red' ? 'bg-red-600' : (col === 'black' ? 'bg-zinc-900' : 'bg-green-600');
+                tape.innerHTML += `
+                    <div class="roulette-item ${bg}">
+                        <span class="text-2xl font-black font-header text-white">${num}</span>
+                        <span class="text-[9px] uppercase font-bold text-white/60">${col.toUpperCase()}</span>
+                    </div>
+                `;
+            }
         }
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
+        initRouletteTape();
+
+        function selectCase(price, name) {
+            selectedCasePrice = price;
+            selectedCaseName = name;
+            setBet(price);
         }
 
-        function switchTab(gameKey) {
-            playAudioSound('click');
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('bg-orange-500', 'text-white', 'active');
-                btn.classList.add('bg-[#18181f]', 'text-gray-400');
+        function setWheelMultiplier(m, chance) {
+            wheelMult = m;
+            wheelChance = chance;
+            [2, 3, 5, 10].forEach(x => {
+                const btn = document.getElementById(`wheel-m-${x}`);
+                btn.className = (x === m) 
+                    ? 'p-3 bg-orange-500 text-white font-header font-bold rounded-xl border border-orange-500'
+                    : 'p-3 bg-white/5 text-white/60 font-header font-bold rounded-xl border border-white/10';
             });
-            const activeTab = document.getElementById('tab-' + gameKey);
-            if (activeTab) {
-                activeTab.classList.add('bg-orange-500', 'text-white', 'active');
-                activeTab.classList.remove('bg-[#18181f]', 'text-gray-400');
+            document.getElementById('wheel-disc').innerText = `x${m}`;
+            updatePotentialWin();
+        }
+
+        function setRouletteBet(col) {
+            rouletteChoice = col;
+            ['red', 'green', 'black'].forEach(c => {
+                const btn = document.getElementById(`r-btn-${c}`);
+                btn.style.opacity = (c === col) ? '1' : '0.5';
+                btn.style.borderColor = (c === col) ? '#ff7010' : 'transparent';
+            });
+            updatePotentialWin();
+        }
+
+        function switchGame(game) {
+            currentGame = game;
+            document.querySelectorAll('.tab-game').forEach(b => {
+                b.classList.remove('active', 'text-white');
+                b.classList.add('text-white/50');
+            });
+            document.getElementById(`btn-game-${game}`).classList.add('active', 'text-white');
+
+            const games = ['cases', 'slots', 'mines', 'wheel', 'crash', 'coinflip', 'dice', 'roulette'];
+            games.forEach(g => {
+                const el = document.getElementById(`display-${g}`);
+                if (el) el.classList.add('hidden');
+            });
+            
+            const activeEl = document.getElementById(`display-${game}`);
+            if (activeEl) {
+                activeEl.classList.remove('hidden');
+                if(['coinflip','dice','mines','wheel','crash','roulette'].includes(game)) {
+                    activeEl.classList.add('flex');
+                }
             }
-
-            document.querySelectorAll('.game-view').forEach(view => view.classList.add('hidden'));
-            document.getElementById('game-' + gameKey).classList.remove('hidden');
+            updatePotentialWin();
         }
 
-        function handleLogin(e) {
-            e.preventDefault();
-            const nick = document.getElementById('input-nick').value.trim();
-            if (nick) {
-                state.user = nick;
-                saveState();
-                closeModal('modal-auth');
-                playAudioSound('win');
-            }
+        function setCoinChoice(c) {
+            coinChoice = c;
+            document.getElementById('choice-heads').className = c === 'heads' 
+                ? 'px-6 py-2 rounded-xl border border-orange-500 bg-orange-500 text-white text-xs font-header font-bold uppercase' 
+                : 'px-6 py-2 rounded-xl border border-white/10 bg-white/5 text-white/50 text-xs font-header font-bold uppercase';
+            document.getElementById('choice-tails').className = c === 'tails' 
+                ? 'px-6 py-2 rounded-xl border border-orange-500 bg-orange-500 text-white text-xs font-header font-bold uppercase' 
+                : 'px-6 py-2 rounded-xl border border-white/10 bg-white/5 text-white/50 text-xs font-header font-bold uppercase';
         }
 
-        function logout() {
-            state.user = null;
-            saveState();
-            playAudioSound('click');
+        function setDiceChoice(c) {
+            diceChoice = c;
+            document.getElementById('choice-under').className = c === 'under' 
+                ? 'px-6 py-2 rounded-xl border border-orange-500 bg-orange-500 text-white text-xs font-header font-bold uppercase' 
+                : 'px-6 py-2 rounded-xl border border-white/10 bg-white/5 text-white/50 text-xs font-header font-bold uppercase';
+            document.getElementById('choice-over').className = c === 'over' 
+                ? 'px-6 py-2 rounded-xl border border-orange-500 bg-orange-500 text-white text-xs font-header font-bold uppercase' 
+                : 'px-6 py-2 rounded-xl border border-white/10 bg-white/5 text-white/50 text-xs font-header font-bold uppercase';
         }
 
-        function copyCommand() {
-            navigator.clipboard.writeText('/bank pay oukouk 1000');
-            alert('Команда скопирована!');
-            playAudioSound('click');
+        function updatePotentialWin() {
+            const amount = parseFloat(document.getElementById('bet-amount').value) || 0;
+            let mult = 2;
+            if (currentGame === 'wheel') mult = wheelMult;
+            if (currentGame === 'roulette') mult = (rouletteChoice === 'green') ? 14 : 2;
+            document.getElementById('potential-win').innerText = "$" + Math.round(amount * mult).toLocaleString();
         }
 
-        function handleWithdraw(e) {
-            e.preventDefault();
-            const amt = parseInt(document.getElementById('withdraw-amount').value);
-            if (amt > state.balance) {
-                alert('Недостаточно средств!');
+        async function playGame() {
+            const nick = document.getElementById('nickname').value || 'hheell';
+            const ds = document.getElementById('discord').value;
+            const bet = parseFloat(document.getElementById('bet-amount').value);
+            const token = document.querySelector('[name="cf-turnstile-response"]')?.value || "";
+            const status = document.getElementById('game-status');
+
+            if (!ds || isNaN(bet)) {
+                alert("Укажите ваш Discord ID и сумму.");
                 return;
             }
-            state.balance -= amt;
-            saveState();
-            closeModal('modal-withdraw');
-            alert('Заявка на вывод принята!');
-            playAudioSound('win');
-        }
 
-        // BET HELPERS
-        function setBet(inputId, val) {
-            document.getElementById(inputId).value = val;
-            playAudioSound('click');
-        }
-        function doubleBet(inputId) {
-            const el = document.getElementById(inputId);
-            el.value = parseInt(el.value || 0) * 2;
-            playAudioSound('click');
-        }
+            status.innerText = "Игра выполняется...";
 
-        // GAME 1: SLOTS
-        const slotSymbols = ['💎', '👑', '🍋', '🔔', '7️⃣'];
-        function spinSlots() {
-            const bet = parseInt(document.getElementById('slots-bet').value);
-            if (bet > state.balance) return alert('Недостаточно средств!');
-            state.balance -= bet; saveState();
+            let isWin = false;
+            let payout = 0;
 
-            playAudioSound('click');
-            const resEl = document.getElementById('slots-result');
-            resEl.innerText = 'Крутим...';
+            // Расчет победы строго по требованиям
+            if (currentGame === 'coinflip') {
+                isWin = Math.random() < 0.30; // 30% шанс победы
+                payout = isWin ? bet * 2 : 0;
+            } else if (currentGame === 'dice') {
+                isWin = Math.random() < 0.30; // 30% шанс победы
+                payout = isWin ? bet * 2 : 0;
 
-            let count = 0;
-            const interval = setInterval(() => {
-                document.getElementById('slot-1').innerText = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-                document.getElementById('slot-2').innerText = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-                document.getElementById('slot-3').innerText = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-                count++;
-                if (count > 10) {
-                    clearInterval(interval);
-                    const s1 = document.getElementById('slot-1').innerText;
-                    const s2 = document.getElementById('slot-2').innerText;
-                    const s3 = document.getElementById('slot-3').innerText;
+                let d1 = Math.floor(Math.random() * 6) + 1;
+                let d2 = Math.floor(Math.random() * 6) + 1;
 
-                    if (s1 === s2 && s2 === s3) {
-                        const win = bet * 10;
-                        state.balance += win;
-                        resEl.innerText = `🎉 ДЖЕКПОТ! Выигрыш: +$${win}`;
-                        playAudioSound('win');
-                    } else if (s1 === s2 || s2 === s3 || s1 === s3) {
-                        const win = Math.floor(bet * 1.5);
-                        state.balance += win;
-                        resEl.innerText = `Победа! Выигрыш: +$${win}`;
-                        playAudioSound('win');
-                    } else {
-                        resEl.innerText = 'Не повезло! Попробуйте еще раз.';
-                        playAudioSound('loss');
-                    }
-                    saveState();
-                }
-            }, 100);
-        }
-
-        // GAME 2: CRASH
-        let crashInterval = null;
-        let crashRunning = false;
-        function handleCrashBtn() {
-            if (!crashRunning) {
-                const bet = parseInt(document.getElementById('crash-bet').value);
-                if (bet > state.balance) return alert('Недостаточно средств!');
-                state.balance -= bet; saveState();
-
-                crashRunning = true;
-                document.getElementById('btn-crash-action').innerText = 'Забрать выигрыш';
-                let mult = 1.00;
-                const crashPoint = (Math.random() * 3 + 1.1).toFixed(2);
-
-                crashInterval = setInterval(() => {
-                    mult += 0.03;
-                    document.getElementById('crash-multiplier').innerText = mult.toFixed(2) + 'x';
-
-                    if (mult >= crashPoint) {
-                        clearInterval(crashInterval);
-                        crashRunning = false;
-                        document.getElementById('crash-status').innerText = '💥 РАКЕТА ВЗОРВАЛАСЬ!';
-                        document.getElementById('btn-crash-action').innerText = '🚀 Запустить ракету';
-                        playAudioSound('loss');
-                    }
-                }, 100);
-            } else {
-                clearInterval(crashInterval);
-                crashRunning = false;
-                const mult = parseFloat(document.getElementById('crash-multiplier').innerText);
-                const bet = parseInt(document.getElementById('crash-bet').value);
-                const win = Math.floor(bet * mult);
-                state.balance += win;
-                saveState();
-                document.getElementById('crash-status').innerText = `✅ Забрано на ${mult.toFixed(2)}x (+${win}$)`;
-                document.getElementById('btn-crash-action').innerText = '🚀 Запустить ракету';
-                playAudioSound('win');
-            }
-        }
-
-        // GAME 3: COINFLIP
-        function selectCoinSide(side) {
-            state.selectedCoinSide = side;
-            document.getElementById('side-heads').className = side === 'heads' ? 'bg-orange-500 text-white py-3 rounded-xl font-bold text-xs border border-orange-400' : 'bg-white/5 text-gray-400 py-3 rounded-xl font-bold text-xs border border-white/5';
-            document.getElementById('side-tails').className = side === 'tails' ? 'bg-orange-500 text-white py-3 rounded-xl font-bold text-xs border border-orange-400' : 'bg-white/5 text-gray-400 py-3 rounded-xl font-bold text-xs border border-white/5';
-            playAudioSound('click');
-        }
-
-        function playCoinflip() {
-            const bet = parseInt(document.getElementById('coin-bet').value);
-            if (bet > state.balance) return alert('Недостаточно средств!');
-            state.balance -= bet; saveState();
-
-            const coinEl = document.getElementById('coin-element');
-            coinEl.classList.add('coin-spin');
-
-            setTimeout(() => {
-                coinEl.classList.remove('coin-spin');
-                const winSide = Math.random() > 0.5 ? 'heads' : 'tails';
-                coinEl.innerText = winSide === 'heads' ? '👑' : '🦅';
-
-                if (winSide === state.selectedCoinSide) {
-                    const win = bet * 2;
-                    state.balance += win;
-                    document.getElementById('coin-result').innerText = `ПОБЕДА! Выпало: ${winSide === 'heads' ? 'Орёл' : 'Решка'} (+$${win})`;
-                    playAudioSound('win');
+                if (isWin) {
+                    if (diceChoice === 'under') { d1 = 1; d2 = Math.floor(Math.random() * 4) + 1; }
+                    else { d1 = 5; d2 = Math.floor(Math.random() * 2) + 2; }
                 } else {
-                    document.getElementById('coin-result').innerText = `Проигрыш! Выпало: ${winSide === 'heads' ? 'Орёл' : 'Решка'}`;
-                    playAudioSound('loss');
+                    if (diceChoice === 'under') { d1 = 4; d2 = 4; }
+                    else { d1 = 2; d2 = 2; }
                 }
-                saveState();
-            }, 1000);
-        }
+                renderDicePixel('dice-1', d1);
+                renderDicePixel('dice-2', d2);
+            } else if (currentGame === 'wheel') {
+                isWin = Math.random() < (wheelChance / 100);
+                payout = isWin ? bet * wheelMult : 0;
+            } else if (currentGame === 'crash') {
+                // Шансы Краша: 1 из 20 (>x3.0), редкие x2, в основном завал 1.0x-1.2x
+                const r = Math.random();
+                let crashPoint = 1.10;
+                if (r < 0.85) {
+                    crashPoint = (1.00 + Math.random() * 0.25);
+                } else if (r < 0.95) {
+                    crashPoint = (1.26 + Math.random() * 0.74);
+                } else {
+                    crashPoint = (3.00 + Math.random() * 2.50);
+                }
 
-        // GAME 4: DICE
-        function updateDiceCalculations() {
-            const chance = document.getElementById('dice-slider').value;
-            document.getElementById('dice-chance-val').innerText = chance + '%';
-            document.getElementById('dice-mult-val').innerText = 'x' + (98 / chance).toFixed(2);
-        }
-
-        function playDice() {
-            const bet = parseInt(document.getElementById('dice-bet').value);
-            if (bet > state.balance) return alert('Недостаточно средств!');
-            state.balance -= bet; saveState();
-
-            const chance = parseInt(document.getElementById('dice-slider').value);
-            const roll = (Math.random() * 100).toFixed(2);
-            document.getElementById('dice-result-num').innerText = roll;
-
-            if (parseFloat(roll) <= chance) {
-                const mult = 98 / chance;
-                const win = Math.floor(bet * mult);
-                state.balance += win;
-                document.getElementById('dice-status').innerText = `ПОБЕДА! (+${win}$)`;
-                playAudioSound('win');
+                let currentM = 1.0;
+                const crashEl = document.getElementById('crash-multiplier');
+                const interval = setInterval(() => {
+                    currentM += 0.05;
+                    crashEl.innerText = currentM.toFixed(2) + 'x';
+                    if(currentM >= crashPoint) {
+                        clearInterval(interval);
+                        crashEl.innerText = crashPoint.toFixed(2) + 'x (КРАШ)';
+                        status.innerText = `Краш произошел на ${crashPoint.toFixed(2)}x!`;
+                    }
+                }, 80);
+                return;
+            } else if (currentGame === 'roulette') {
+                const tape = document.getElementById('roulette-tape');
+                initRouletteTape();
+                tape.style.transform = 'translateX(0px)';
+                isWin = Math.random() < 0.25;
+                payout = isWin ? bet * (rouletteChoice === 'green' ? 14 : 2) : 0;
+                setTimeout(() => {
+                    tape.style.transform = `translateX(-${1100 + Math.floor(Math.random()*200)}px)`;
+                }, 50);
+                setTimeout(() => {
+                    status.innerText = isWin ? `РУЛЕТКА: ВЫИГРЫШ +$${payout.toLocaleString()}` : "РУЛЕТКА: Проигрыш!";
+                }, 4100);
             } else {
-                document.getElementById('dice-status').innerText = 'Проиграл! Попробуй еще раз.';
-                playAudioSound('loss');
+                isWin = Math.random() < 0.30;
+                payout = isWin ? bet * 2 : 0;
             }
-            saveState();
-        }
 
-        // GAME 5: WHEEL
-        function spinWheel() {
-            const bet = parseInt(document.getElementById('wheel-bet').value);
-            if (bet > state.balance) return alert('Недостаточно средств!');
-            state.balance -= bet; saveState();
-
-            const wheel = document.getElementById('wheel-canvas-container');
-            const deg = Math.floor(2000 + Math.random() * 2000);
-            wheel.style.transform = `rotate(${deg}deg)`;
-
-            setTimeout(() => {
-                const mults = [0, 0.5, 1.2, 2.0, 5.0];
-                const mult = mults[Math.floor(Math.random() * mults.length)];
-                const win = Math.floor(bet * mult);
-                state.balance += win;
-                document.getElementById('wheel-result').innerText = `Множитель x${mult}! Выигрыш: +$${win}`;
-                if (mult > 1) playAudioSound('win'); else playAudioSound('loss');
-                saveState();
-            }, 4000);
-        }
-
-        // GAME 6: ROULETTE
-        function setRouletteChoice(choice) {
-            state.rouletteChoice = choice;
-            playAudioSound('click');
-        }
-
-        function spinRoulette() {
-            const bet = parseInt(document.getElementById('roulette-bet').value);
-            if (bet > state.balance) return alert('Недостаточно средств!');
-            state.balance -= bet; saveState();
-
-            const num = Math.floor(Math.random() * 37);
-            document.getElementById('roulette-display').innerText = num;
-
-            const isRed = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36].includes(num);
-            let win = 0;
-
-            if (state.rouletteChoice === 'red' && isRed) win = bet * 2;
-            if (state.rouletteChoice === 'black' && !isRed && num !== 0) win = bet * 2;
-            if (state.rouletteChoice === 'even' && num % 2 === 0 && num !== 0) win = bet * 2;
-            if (state.rouletteChoice === 'odd' && num % 2 !== 0) win = bet * 2;
-
-            if (win > 0) {
-                state.balance += win;
-                document.getElementById('roulette-result').innerText = `Выпало ${num}! Победа +$${win}`;
-                playAudioSound('win');
-            } else {
-                document.getElementById('roulette-result').innerText = `Выпало ${num}. Проиграно.`;
-                playAudioSound('loss');
+            if (currentGame !== 'crash' && currentGame !== 'roulette') {
+                status.innerText = isWin ? `Результат: ВЫИГРЫШ +$${payout.toLocaleString()}` : "Результат: Проигрыш";
             }
-            saveState();
-        }
 
-        // INIT
-        document.addEventListener('DOMContentLoaded', () => {
-            updateUI();
-            updateDiceCalculations();
-        });
+            // Добавление в живую ленту
+            const feed = document.getElementById('live-feed');
+            const newFeed = document.createElement('div');
+            newFeed.className = 'live-feed-item';
+            newFeed.innerHTML = `<span class="text-white/40">${nick}:</span> <span class="${isWin ? 'text-green-400' : 'text-red-400'} font-bold">${currentGame.toUpperCase()} $${payout}</span>`;
+            feed.prepend(newFeed);
+
+            try {
+                await fetch(WORKER_URL + "/submit", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ type: "casino", game: currentGame, nickname: nick, discord: ds, bet: bet, win: isWin, payout: payout, turnstileToken: token })
+                });
+            } catch (e) {}
+        }
     </script>
 </body>
 </html>
